@@ -139,6 +139,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--rule);
     <li class="sub"><a href="#markov-rappels">Rappels utiles</a></li>
     <li class="sub"><a href="#markov-emv">EMV de la transition</a></li>
     <li class="sub"><a href="#markov-asympt">Loi asymptotique</a></li>
+    <li class="sub"><a href="#markov-demo">Démonstration complète</a></li>
     <li class="sub"><a href="#markov-tests">Tests</a></li>
     <li><a href="#poisson">Processus de Poisson</a></li>
     <li class="sub"><a href="#poisson-schemas">Trois schémas d'observation</a></li>
@@ -281,6 +282,105 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--rule);
   </div>
   <div class="out" id="tl-out" aria-live="polite"></div>
 </div>
+
+<h3 id="markov-demo">Démonstration complète : vraisemblance, consistance, variance et test</h3>
+<p>Cette sous-section reconstruit pas à pas le résultat central du chapitre : l'EMV d'une probabilité de transition est consistant, asymptotiquement gaussien, et l'on sait estimer sa variance pour construire un intervalle et un test. On fixe un couple d'états $(x_0,y_0)$ et l'on note</p>
+<div class="eq">$$p = P(x_0,y_0) = \mathbb P(X_{t+1}=y_0 \mid X_t = x_0).$$</div>
+<p class="reading">Dans le cours, un indice $i$ (écrit $p_i$, $P_i$, $\pi_i$) désigne la chaîne $i$ quand on compare deux chaînes. Ici on travaille avec une seule chaîne, on l'omet.</p>
+<p><b>Hypothèses :</b> chaîne homogène, irréductible sur $E$ fini, donc récurrente positive, de probabilité invariante $\pi$ avec $\pi(x_0) > 0$. On observe une trajectoire $X_1,\dots,X_n$.</p>
+
+<h4>Étape 1. La vraisemblance et l'EMV</h4>
+<p>Conditionnellement à $X_1$, la vraisemblance ne dépend que des comptages (voir plus haut) :</p>
+<div class="eq">$$\ell(P) = \sum_{x\in E}\sum_{y\in E} N_n(x,y)\ln P(x,y), \qquad \sum_{y} P(x,y) = 1 \text{ pour chaque } x.$$</div>
+<p>Les lignes ne partagent aucun paramètre, on maximise la ligne $x_0$ seule. Avec un multiplicateur de Lagrange $\lambda$ pour la contrainte :</p>
+<div class="eq">$$\frac{\partial}{\partial P(x_0,y)}\Big[\sum_y N_n(x_0,y)\ln P(x_0,y) - \lambda\Big(\sum_y P(x_0,y) - 1\Big)\Big] = \frac{N_n(x_0,y)}{P(x_0,y)} - \lambda = 0.$$</div>
+<p>Donc $P(x_0,y) = N_n(x_0,y)/\lambda$. En sommant sur $y$, $1 = N_n(x_0+)/\lambda$, soit $\lambda = N_n(x_0+)$. La fonction est concave (somme de logarithmes), ce point critique est bien le maximum :</p>
+<div class="eq">$$\boxed{\hat p = \frac{N_n(x_0,y_0)}{N_n(x_0+)}}, \qquad N_n(x_0,y_0) = \sum_{k=2}^{n}\mathbf 1\{X_{k-1}=x_0, X_k = y_0\}, \quad N_n(x_0+) = \sum_{k=2}^{n}\mathbf 1\{X_{k-1}=x_0\}.$$</div>
+<p class="reading">Numérateur : nombre de sauts $x_0 \to y_0$. Dénominateur : nombre de départs depuis $x_0$. C'est une fréquence conditionnelle empirique. Le Lemme 2 (p. 29) donne le même résultat sans dérivée.</p>
+
+<h4>Étape 2. La consistance</h4>
+<p>Le théorème ergodique s'applique à $X$, et aussi à la chaîne des couples $Y_k = (X_{k-1},X_k)$, qui est irréductible sur les couples autorisés, de loi invariante $\pi(x)P(x,y)$. On obtient presque sûrement :</p>
+<div class="eq">$$\frac{N_n(x_0+)}{n} \xrightarrow{\text{p.s.}} \pi(x_0), \qquad \frac{N_n(x_0,y_0)}{n} \xrightarrow{\text{p.s.}} \pi(x_0)\,p.$$</div>
+<p>Comme $\pi(x_0) > 0$, le quotient converge vers le quotient des limites :</p>
+<div class="eq">$$\boxed{\hat p = \frac{N_n(x_0,y_0)/n}{N_n(x_0+)/n} \xrightarrow{\text{p.s.}} \frac{\pi(x_0)\,p}{\pi(x_0)} = p.}$$</div>
+<p class="reading">L'EMV est fortement consistant : avec une trajectoire assez longue, on retrouve la vraie probabilité de transition. Analogie : on passe une fraction $\pi(x_0)$ du temps en $x_0$, et parmi ces passages une fraction $p$ part vers $y_0$.</p>
+
+<h4>Étape 3. Pourquoi introduire la fonction $h$ ?</h4>
+<p>On veut la loi de $\sqrt n(\hat p - p)$. On multiplie par $\sqrt n$ parce que l'erreur est de l'ordre de $1/\sqrt n$ : cette normalisation donne une limite non dégénérée. On pose</p>
+<div class="eq">$$\boxed{h(u,v) = \mathbf 1\{u = x_0,\ v = y_0\}} = \begin{cases}1 & \text{si } u = x_0 \text{ et } v = y_0,\\ 0 & \text{sinon.}\end{cases}$$</div>
+<p>$h$ repère une transition précise. Sur la trajectoire $A \to B \to A \to A \to B$ avec $h(u,v) = \mathbf 1\{u=A, v=B\}$ :</p>
+<div class="tablewrap"><table><thead><tr><th>transition</th><th>A vers B</th><th>B vers A</th><th>A vers A</th><th>A vers B</th></tr></thead>
+<tbody><tr><td>$h(u,v)$</td><td>1</td><td>0</td><td>0</td><td>1</td></tr></tbody></table></div>
+<p>La somme vaut 2 : c'est exactement le nombre de sauts $A\to B$. En général,</p>
+<div class="eq">$$N_n(x_0,y_0) = \sum_{k=2}^{n} h(X_{k-1},X_k).$$</div>
+<p><b>Pourquoi c'est utile :</b> le cours dispose d'un TLC pour les fonctions de deux états successifs (Corollaire 3, p. 27) :</p>
+<div class="eq">$$\frac{1}{\sqrt n}\sum_{k=2}^{n}\Big[h(X_{k-1},X_k) - Ph(X_{k-1})\Big] \xrightarrow{\ \mathcal L\ } \mathcal N(0,\tau^2), \qquad \tau^2 = \int P(h^2)\,d\pi - \int (Ph)^2\,d\pi.$$</div>
+<p>On choisit $h$ précisément pour pouvoir appliquer ce théorème.</p>
+
+<h4>Étape 4. Calculer $Ph$</h4>
+<p>Pour $h : E\times E \to \mathbb R$, le cours définit</p>
+<div class="eq">$$Ph(u) = \sum_{v\in E} P(u,v)\,h(u,v) = \mathbb E\big[h(X_t,X_{t+1}) \mid X_t = u\big].$$</div>
+<p>On fixe l'état actuel $u$ et l'on fait la moyenne de $h(u,v)$ sur les états suivants possibles. Deux cas :</p>
+<ul>
+<li>si $u \ne x_0$, l'indicatrice est nulle pour tout $v$, donc $Ph(u) = 0$ ;</li>
+<li>si $u = x_0$, seul le terme $v = y_0$ reste, donc $Ph(x_0) = P(x_0,y_0) = p$.</li>
+</ul>
+<div class="eq">$$\boxed{Ph(u) = p\,\mathbf 1\{u = x_0\}}$$</div>
+<p class="reading">Depuis $x_0$, le saut vers $y_0$ se produit avec probabilité $p$. Depuis un autre état, ce saut précis est impossible au pas suivant.</p>
+
+<h4>Étape 5. Réécrire $S_n$ avec les comptages</h4>
+<p>On pose $S_n = \frac{1}{\sqrt n}\sum_{k=2}^{n}\big[h(X_{k-1},X_k) - Ph(X_{k-1})\big]$ et l'on remplace chaque terme :</p>
+<div class="eq">$$S_n = \frac{1}{\sqrt n}\Big[\sum_{k=2}^{n}\mathbf 1\{X_{k-1}=x_0,X_k=y_0\} - p\sum_{k=2}^{n}\mathbf 1\{X_{k-1}=x_0\}\Big] = \boxed{\frac{1}{\sqrt n}\Big[N_n(x_0,y_0) - p\,N_n(x_0+)\Big]}$$</div>
+<p class="reading">L'indicatrice transforme le problème d'estimation en une somme centrée, à laquelle s'applique le TLC des chaînes de Markov.</p>
+
+<h4>Étape 6. La variance $\tau^2$</h4>
+<p><b>Premier terme.</b> Une indicatrice vérifie $h^2 = h$ (car $0^2 = 0$ et $1^2 = 1$), donc $P(h^2) = Ph = p\,\mathbf 1\{u=x_0\}$ et</p>
+<div class="eq">$$\int P(h^2)\,d\pi = p\int \mathbf 1\{u = x_0\}\,d\pi(u) = p\,\pi(x_0).$$</div>
+<p><b>Deuxième terme.</b> $(Ph(u))^2 = p^2\,\mathbf 1\{u=x_0\}^2 = p^2\,\mathbf 1\{u=x_0\}$, donc</p>
+<div class="eq">$$\int (Ph)^2\,d\pi = p^2\,\pi(x_0).$$</div>
+<p><b>On rassemble :</b></p>
+<div class="eq">$$\tau^2 = \pi(x_0)\,p - \pi(x_0)\,p^2 = \boxed{\pi(x_0)\,p\,(1-p)}$$</div>
+<p class="reading">C'est la formule $\operatorname{Var}(X) = \mathbb E(X^2) - [\mathbb E(X)]^2$ appliquée à $h$, en moyennant sur l'état de départ selon $\pi$.</p>
+<p class="warn"><span class="label">Attention</span>$\tau^2$ est la variance de la loi limite de $S_n$, pas encore la variance asymptotique de $\hat p$.</p>
+
+<h4>Étape 7. Passer de $S_n$ à l'estimateur</h4>
+<p>On met au même dénominateur :</p>
+<div class="eq">$$\sqrt n(\hat p - p) = \sqrt n\,\frac{N_n(x_0,y_0) - p\,N_n(x_0+)}{N_n(x_0+)} = \boxed{\frac{n}{N_n(x_0+)}\,S_n}$$</div>
+<p>(simple manipulation : on multiplie et on divise par $\sqrt n$). D'après l'étape 2, $\dfrac{n}{N_n(x_0+)} \xrightarrow{\text{p.s.}} \dfrac{1}{\pi(x_0)}$ : on a environ $n\,\pi(x_0)$ départs depuis $x_0$.</p>
+
+<h4>Étape 8. Le lemme de Slutsky et le résultat final</h4>
+<p>Si $U_n \xrightarrow{\mathcal L} U$ et $V_n \xrightarrow{\mathbb P} c$, alors $V_nU_n \xrightarrow{\mathcal L} cU$. Avec $V_n = n/N_n(x_0+) \to 1/\pi(x_0)$ et $U_n = S_n \to \mathcal N(0,\tau^2)$ :</p>
+<div class="eq">$$\sqrt n(\hat p - p) \xrightarrow{\ \mathcal L\ } \mathcal N\Big(0,\ \frac{\tau^2}{\pi(x_0)^2}\Big), \qquad \frac{\pi(x_0)\,p(1-p)}{\pi(x_0)^2} = \frac{p(1-p)}{\pi(x_0)}.$$</div>
+<div class="eq">$$\boxed{\sqrt n(\hat p - p) \xrightarrow{\ \mathcal L\ } \mathcal N\Big(0,\ \sigma^2\Big), \qquad \sigma^2 = \frac{p(1-p)}{\pi(x_0)}}$$</div>
+
+<h4>Étape 9. Interpréter la variance</h4>
+<ul>
+<li>$p(1-p)$ est la variance d'une Bernoulli : depuis $x_0$, le saut vers $y_0$ a lieu ou non.</li>
+<li>$1/\pi(x_0)$ mesure la rareté de l'état de départ : moins on passe par $x_0$, moins on observe de départs, plus l'estimateur est variable.</li>
+</ul>
+<p>Avec $p = 0{,}4$, donc $p(1-p) = 0{,}24$ :</p>
+<div class="tablewrap"><table><thead><tr><th>$\pi(x_0)$</th><th>0,50</th><th>0,20</th><th>0,10</th><th>0,01</th></tr></thead>
+<tbody><tr><td>$\sigma^2 = 0{,}24/\pi(x_0)$</td><td>0,48</td><td>1,20</td><td>2,40</td><td>24,00</td></tr></tbody></table></div>
+<p class="reading">Un état visité 1 % du temps donne une variance 50 fois plus grande qu'un état visité la moitié du temps.</p>
+
+<h4>Étape 10. Estimer la variance et construire un intervalle</h4>
+<p>$\sigma^2$ dépend de $p$ et $\pi(x_0)$, inconnus. On les remplace par des estimateurs consistants : $\hat p$ (étape 2) et $\hat\pi(x_0) = N_n(x_0+)/n$ (théorème ergodique) :</p>
+<div class="eq">$$\hat\sigma^2 = \frac{\hat p(1-\hat p)}{\hat\pi(x_0)} = \frac{n\,\hat p(1-\hat p)}{N_n(x_0+)} \xrightarrow{\text{p.s.}} \sigma^2$$</div>
+<p>par continuité de $(a,b) \mapsto a(1-a)/b$ en $b = \pi(x_0) > 0$. Slutsky donne alors une statistique pivotale :</p>
+<div class="eq">$$\frac{\sqrt n(\hat p - p)}{\hat\sigma} = \sqrt{N_n(x_0+)}\ \frac{\hat p - p}{\sqrt{\hat p(1-\hat p)}} \xrightarrow{\ \mathcal L\ } \mathcal N(0,1),$$</div>
+<p>d'où l'intervalle de confiance asymptotique de niveau $1-\alpha$ :</p>
+<div class="eq">$$\boxed{\hat p \pm z_{1-\alpha/2}\sqrt{\frac{\hat p(1-\hat p)}{N_n(x_0+)}}}$$</div>
+<p class="reading">Le facteur $n$ disparaît : seul compte le nombre de départs depuis $x_0$, comme dans un sondage dont la taille serait $N_n(x_0+)$.</p>
+
+<h4>Étape 11. Le test sur une probabilité de transition</h4>
+<p>On teste $H_0 : p = p_0$ contre $H_1 : p \ne p_0$. Sous $H_0$, la variance est connue en $p_0$, d'où la statistique de Wald</p>
+<div class="eq">$$Z_n = \sqrt{N_n(x_0+)}\ \frac{\hat p - p_0}{\sqrt{p_0(1-p_0)}} \xrightarrow[H_0]{\ \mathcal L\ } \mathcal N(0,1).$$</div>
+<p>On rejette $H_0$ au niveau $\alpha$ si $|Z_n| > z_{1-\alpha/2}$ ($1{,}96$ à 5 %). On peut aussi utiliser $\hat p(1-\hat p)$ au dénominateur : les deux versions ont la même loi limite.</p>
+<p><b>Sur l'exemple de la page</b> ($\hat p = 0{,}4$, $N_n(0+) = 10$), pour $H_0 : p = 0{,}5$ :</p>
+<div class="eq">$$Z_n = \sqrt{10}\ \frac{0{,}4 - 0{,}5}{\sqrt{0{,}25}} = -0{,}632, \qquad |Z_n| < 1{,}96,$$</div>
+<p>on ne rejette pas $H_0$ (p-valeur $\approx 0{,}53$). <b>Lien avec le $\chi^2$ :</b> pour une chaîne à deux états, la statistique $T_n$ du Théorème 3 est la somme des $Z_n^2$ des deux lignes : $0{,}632^2 + 0{,}632^2 = 0{,}4 + 0{,}4 = 0{,}8$, la valeur trouvée dans la section suivante.</p>
+<p class="note">Pour comparer deux chaînes indépendantes (l'indice $i$ du cours), on utilise la même idée : $\dfrac{\hat p_1 - \hat p_2}{\sqrt{\hat\sigma_1^2/n_1 + \hat\sigma_2^2/n_2}} \to \mathcal N(0,1)$ sous $H_0 : p_1 = p_2$. Voir l'exercice 3 de l'atelier.</p>
+<p class="src">Polycopié, Théorème 2 (p. 26), Corollaires 3 et 4 (p. 27-28), Lemme 2 et Proposition 8 (p. 29-30).</p>
 
 <h3 id="markov-tests">Tests sur une chaîne de Markov</h3>
 <dl class="layers">
