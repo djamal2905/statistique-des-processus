@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Statistique des processus : comprendre et calculer</title>
+<meta name="description" content="Cours interactif de Statistique des processus (ENSAI 3A) : maximum de vraisemblance pour chaînes de Markov, processus de Poisson, processus de sauts et modèles de Markov cachés, avec exemples chiffrés, calculateurs et exercices corrigés.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+:root {
+  --paper: #fbf8f1; --paper-2: #f3eee2; --ink: #1d2422; --muted: #55605b; --rule: #ddd5c4;
+  --accent: #1f6f5c; --accent-soft: #e2efe9; --hidden: #b4641b; --hidden-soft: #f8ead9; --obs: #2b5d8a; --obs-soft: #e3edf6;
+  --warn: #8a3b2b; --warn-soft: #f6e4df; --ok: #2f6b3a;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Charter, Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Code", Consolas, "Liberation Mono", monospace;
+  --measure: 46rem; --rail: 15.5rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #151a18; --paper-2: #1d2421; --ink: #e9ece6; --muted: #a9b3ad; --rule: #333d38;
+    --accent: #6cc2a6; --accent-soft: #1f3530; --hidden: #e6a15d; --hidden-soft: #3a2a1a; --obs: #8bb8e3; --obs-soft: #1b2a38;
+    --warn: #f0a191; --warn-soft: #3a2420; --ok: #8fd19a; }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.65 var(--sans); }
+a { color: var(--accent); }
+h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.2; font-weight: 600; }
+h2 { font-size: 2rem; margin: 3.5rem 0 1rem; padding-top: 1.2rem; border-top: 2px solid var(--ink); }
+h3 { font-size: 1.35rem; margin: 2.4rem 0 .6rem; }
+h4 { font-size: 1.08rem; margin: 1.6rem 0 .4rem; }
+p { margin: 0 0 1em; }
+code, .mono { font-family: var(--mono); font-size: .9em; }
+.layout { display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); gap: 3rem; max-width: 76rem; margin: 0 auto; padding: 0 1.5rem; }
+.rail { position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto; padding: 2rem 0 2rem; font-size: .9rem; border-right: 1px solid var(--rule); padding-right: 1rem; }
+.rail .brand { font-family: var(--serif); font-size: 1.05rem; font-weight: 600; margin: 0 0 1rem; }
+.rail ol { list-style: none; margin: 0; padding: 0; }
+.rail li { margin: 0; }
+.rail a { display: block; padding: .28rem .5rem; color: var(--muted); text-decoration: none; border-left: 2px solid transparent; }
+.rail a:hover { color: var(--ink); }
+.rail a[aria-current="true"] { color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); }
+.rail .sub a { padding-left: 1.2rem; font-size: .85rem; }
+.rail .progress { margin-top: 1.4rem; font-size: .82rem; color: var(--muted); }
+.rail button { font: inherit; font-size: .8rem; margin-top: .4rem; background: none; border: 1px solid var(--rule); color: var(--muted); padding: .2rem .5rem; border-radius: 4px; cursor: pointer; }
+main { max-width: var(--measure); padding: 2.5rem 0 6rem; min-width: 0; }
+.mobile-nav { display: none; }
+header.opening h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); margin: 0 0 .6rem; letter-spacing: -.01em; }
+.lede { font-size: 1.15rem; color: var(--muted); max-width: 40rem; }
+.route { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 0; margin: 1.6rem 0; border-top: 1px solid var(--rule); }
+.route div { padding: .8rem 1rem .8rem 0; border-bottom: 1px solid var(--rule); }
+.route b { display: block; font-family: var(--serif); font-size: 1.02rem; }
+.route span { font-size: .9rem; color: var(--muted); }
+.label { font: 600 .72rem/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: .35rem; }
+.def { border-left: 3px solid var(--accent); padding: .4rem 0 .4rem 1rem; margin: 1.2rem 0; }
+.warn { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: .7rem 1rem; margin: 1.2rem 0; }
+.warn .label { color: var(--warn); }
+.note { border-left: 3px solid var(--rule); padding: .3rem 0 .3rem 1rem; margin: 1.2rem 0; color: var(--muted); font-size: .95rem; }
+.src { font-size: .82rem; color: var(--muted); }
+.src::before { content: "Source : "; font-weight: 600; }
+.layers { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); gap: .2rem 1.2rem; margin: 1.2rem 0; border-top: 1px solid var(--rule); }
+.layers > dt { font: 600 .78rem/1.4 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); padding: .7rem 0; border-bottom: 1px solid var(--rule); }
+.layers > dd { margin: 0; padding: .6rem 0; border-bottom: 1px solid var(--rule); min-width: 0; }
+.layers > dd p:last-child { margin: 0; }
+.eq { overflow-x: auto; padding: .2rem 0; }
+.reading { font-size: .95rem; color: var(--muted); margin-top: -.3rem; }
+table { border-collapse: collapse; margin: .8rem 0 1.2rem; font-size: .92rem; }
+.tablewrap { overflow-x: auto; }
+th, td { padding: .35rem .7rem; border-bottom: 1px solid var(--rule); text-align: right; font-variant-numeric: tabular-nums; }
+th { font-weight: 600; background: var(--paper-2); }
+td:first-child, th:first-child { text-align: left; }
+.data { background: var(--paper-2); padding: .7rem 1rem; margin: 1rem 0; font-size: .95rem; }
+.data .label { color: var(--muted); }
+.synthetic { display: inline-block; font-size: .75rem; font-weight: 600; color: var(--hidden); border: 1px solid var(--hidden); padding: 0 .4rem; border-radius: 3px; margin-left: .4rem; vertical-align: middle; }
+figure { margin: 1.6rem 0; }
+figcaption { font-size: .88rem; color: var(--muted); margin-top: .4rem; }
+svg { max-width: 100%; height: auto; display: block; }
+svg text { font-family: var(--sans); fill: var(--ink); }
+.tool { border: 1px solid var(--rule); background: var(--paper-2); padding: 1rem 1.2rem 1.1rem; margin: 1.6rem 0; }
+.tool h4 { margin-top: 0; }
+.tool .assume { font-size: .85rem; color: var(--muted); }
+.row { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: end; margin: .6rem 0; }
+label.f { display: flex; flex-direction: column; font-size: .82rem; color: var(--muted); gap: .2rem; }
+input[type="text"], input[type="number"] { font: 1rem var(--mono); padding: .35rem .5rem; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); border-radius: 4px; min-width: 0; }
+input.wide { width: min(100%, 30rem); }
+input.num { width: 7rem; }
+button.act { font: 600 .9rem var(--sans); padding: .45rem .9rem; border-radius: 4px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+button.ghost { font: 600 .9rem var(--sans); padding: .45rem .9rem; border-radius: 4px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); cursor: pointer; }
+button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.out { margin-top: .8rem; }
+.out .err { color: var(--warn); font-weight: 600; }
+.calc { font-family: var(--mono); font-size: .88rem; color: var(--muted); }
+details { border-top: 1px solid var(--rule); padding: .5rem 0; }
+details:last-of-type { border-bottom: 1px solid var(--rule); }
+summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+details[open] > summary { margin-bottom: .5rem; }
+.exercise { margin: 2.2rem 0; }
+.exercise h3 { margin-bottom: .2rem; }
+.meta { font-size: .85rem; color: var(--muted); margin-bottom: .8rem; }
+.exercise ol.tasks { padding-left: 1.3rem; }
+.check { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: .6rem 0; font-size: .92rem; }
+.check .fb { font-weight: 600; }
+.fb.good { color: var(--ok); } .fb.bad { color: var(--warn); }
+.done-mark { font-size: .8rem; margin-left: .5rem; color: var(--ok); }
+.cmp { width: 100%; }
+.cmp td, .cmp th { text-align: left; vertical-align: top; }
+.state1 { color: var(--accent); font-weight: 700; } .state2 { color: var(--hidden); font-weight: 700; }
+.stepper { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; margin: .5rem 0; }
+.stepper output { font-family: var(--mono); font-size: .9rem; }
+.hl { background: var(--hidden-soft); }
+.totop { position: fixed; right: 1rem; bottom: 1rem; background: var(--paper-2); border: 1px solid var(--rule); color: var(--ink); padding: .4rem .7rem; border-radius: 4px; font-size: .85rem; text-decoration: none; }
+footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .88rem; color: var(--muted); }
+@media (max-width: 960px) {
+  .layout { display: block; padding: 0 1rem; }
+  .rail { display: none; }
+  .mobile-nav { display: block; position: sticky; top: 0; z-index: 10; background: var(--paper); border-bottom: 1px solid var(--rule); padding: .5rem 1rem; margin: 0 -1rem; }
+  .mobile-nav summary { padding: .3rem 0; }
+  .mobile-nav ol { list-style: none; padding: 0; margin: .4rem 0; columns: 2; font-size: .9rem; }
+  .mobile-nav a { display: block; padding: .25rem 0; }
+  .layers { grid-template-columns: 1fr; }
+  .layers > dt { padding-bottom: 0; border-bottom: 0; }
+  main { padding-top: 1.2rem; }
+  h2 { font-size: 1.65rem; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+@media print { .rail, .mobile-nav, .tool .row, .totop, button { display: none !important; } details { display: block; } details > * { display: block !important; } .layout { display: block; } body { background: #fff; color: #000; } }
+</style>
+</head>
+<body>
+<a class="totop" href="#top">Haut de page</a>
+<div class="layout" id="top">
+<nav class="rail" aria-label="Sommaire">
+  <p class="brand">Statistique des processus</p>
+  <ol id="toc">
+    <li><a href="#orientation">Avant de commencer</a></li>
+    <li><a href="#methode">La méthode du maximum de vraisemblance</a></li>
+    <li><a href="#markov">Chaînes de Markov</a></li>
+    <li class="sub"><a href="#markov-rappels">Rappels utiles</a></li>
+    <li class="sub"><a href="#markov-emv">EMV de la transition</a></li>
+    <li class="sub"><a href="#markov-asympt">Loi asymptotique</a></li>
+    <li class="sub"><a href="#markov-tests">Tests</a></li>
+    <li><a href="#poisson">Processus de Poisson</a></li>
+    <li class="sub"><a href="#poisson-schemas">Trois schémas d'observation</a></li>
+    <li class="sub"><a href="#weibull">Non homogène : Weibull</a></li>
+    <li><a href="#sauts">Processus de sauts</a></li>
+    <li class="sub"><a href="#sauts-structure">Générateur et chaîne immergée</a></li>
+    <li class="sub"><a href="#sauts-emv">EMV du générateur</a></li>
+    <li class="sub"><a href="#sauts-extinction">Temps d'extinction</a></li>
+    <li><a href="#hmm">Modèles de Markov cachés</a></li>
+    <li class="sub"><a href="#hmm-fb">Forward-backward</a></li>
+    <li class="sub"><a href="#hmm-em">EM (Baum-Welch)</a></li>
+    <li class="sub"><a href="#hmm-viterbi">Viterbi</a></li>
+    <li class="sub"><a href="#hmm-cmp">Comparer les trois</a></li>
+    <li><a href="#exercices">Atelier d'exercices</a></li>
+    <li><a href="#fiche">Fiche de formules</a></li>
+    <li><a href="#sources">Sources</a></li>
+  </ol>
+  <p class="progress"><span id="prog">0</span> exercice(s) marqué(s) comme compris.<br><button type="button" id="resetProg">Réinitialiser</button></p>
+</nav>
+<main id="main">
+<details class="mobile-nav"><summary>Sommaire</summary><ol>
+  <li><a href="#methode">Méthode MV</a></li><li><a href="#markov">Chaînes de Markov</a></li><li><a href="#poisson">Poisson</a></li><li><a href="#weibull">Weibull</a></li>
+  <li><a href="#sauts">Processus de sauts</a></li><li><a href="#hmm">HMM</a></li><li><a href="#hmm-viterbi">Viterbi</a></li><li><a href="#exercices">Exercices</a></li><li><a href="#fiche">Formules</a></li><li><a href="#sources">Sources</a></li>
+</ol></details>
+
+<header class="opening" id="orientation">
+  <span class="label">ENSAI 3A · Statistique des processus</span>
+  <h1>Estimer ce qu'on ne voit qu'à travers le temps</h1>
+  <p class="lede">Une page pour comprendre chaque formule du cours : d'où elle vient, à quoi elle sert, comment la calculer avec de vraies valeurs, puis la retrouver seul dans des exercices théoriques. Tout se fait ici, sans R : les calculs et les simulations tournent dans la page.</p>
+  <div class="route">
+    <div><b>1. Une seule méthode</b><span>Le maximum de vraisemblance, en huit gestes répétés partout.</span></div>
+    <div><b>2. Chaînes de Markov</b><span>Compter les transitions, en déduire la matrice, tester.</span></div>
+    <div><b>3. Poisson</b><span>Ce qu'on observe change la vraisemblance.</span></div>
+    <div><b>4. Processus de sauts</b><span>Des sauts divisés par le temps passé.</span></div>
+    <div><b>5. Markov caché</b><span>Forward-backward, EM, Viterbi : sommer, espérer, maximiser.</span></div>
+    <div><b>6. Atelier</b><span>Treize exercices théoriques, indices et corrigés pas à pas.</span></div>
+  </div>
+  <p class="note">Prérequis : probabilités conditionnelles, loi de Poisson et loi exponentielle, dérivées et logarithmes, l'idée de matrice de transition. Chaque proposition du cours est présentée avec trois questions : <b>que dit-elle ?</b>, <b>à quoi sert-elle ?</b>, <b>à quoi ressemble-t-elle dans la vie courante ?</b> Les données chiffrées marquées <span class="synthetic">données d'enseignement</span> sont inventées pour l'exemple ; tout le reste suit le polycopié.</p>
+</header>
+
+<section id="methode">
+<h2>La méthode du maximum de vraisemblance</h2>
+<p>Tout le cours répète le même geste : on observe une trajectoire, on écrit la probabilité (ou la densité) de ce qu'on a vu en fonction du paramètre inconnu, et on choisit le paramètre qui rend l'observation la plus plausible.</p>
+<dl class="layers">
+  <dt>La question</dt><dd><p>Parmi toutes les valeurs possibles du paramètre, laquelle explique le mieux ce que j'ai observé ?</p></dd>
+  <dt>Définition</dt><dd><div class="eq">$$L(\theta) = f_\theta(\text{observations}), \qquad \ell(\theta)=\ln L(\theta), \qquad \hat\theta = \arg\max_\theta \ell(\theta).$$</div>
+  <p class="reading">On lit la loi des données « à l'envers » : les données sont fixées, c'est le paramètre qui varie.</p></dd>
+  <dt>À quoi ça sert</dt><dd><p>À obtenir un estimateur qui, sous les hypothèses du cours, est consistant et asymptotiquement gaussien, donc à construire des intervalles de confiance et des tests.</p></dd>
+  <dt>Analogie</dt><dd><p>Un détective qui choisit le scénario qui rend les indices les moins surprenants. Il ne dit pas que ce scénario est certain, seulement qu'aucun autre n'explique mieux les indices.</p></dd>
+</dl>
+<h3>Les huit gestes, toujours dans le même ordre</h3>
+<ol>
+  <li><b>Schéma d'observation.</b> Qu'est-ce qui est observé exactement : une trajectoire entière, des dates de sauts, des comptages par intervalle, des observations bruitées d'un état caché ?</li>
+  <li><b>Modèle.</b> Quelle loi relie ces observations au paramètre ?</li>
+  <li><b>Vraisemblance.</b> Écrire la probabilité ou la densité de l'observation.</li>
+  <li><b>Simplifier.</b> Retirer les facteurs qui ne dépendent pas du paramètre (et seulement eux).</li>
+  <li><b>Logarithme.</b> Les produits deviennent des sommes.</li>
+  <li><b>Dériver.</b> Écrire les équations du score, en tenant compte des contraintes (une ligne de matrice somme à 1, un taux est positif).</li>
+  <li><b>Vérifier.</b> Concavité ou argument d'inégalité, cas limites (zéro observation, zéro temps passé).</li>
+  <li><b>Interpréter.</b> Traduire le nombre obtenu dans le contexte, puis donner sa précision.</li>
+</ol>
+<p class="warn"><span class="label">Erreur fréquente</span>Confondre vraisemblance et probabilité du paramètre. $L(\theta)$ n'est pas une loi sur $\theta$ : elle n'a aucune raison de sommer à 1 en $\theta$.</p>
+</section>
+
+<section id="markov">
+<h2>Chaînes de Markov</h2>
+<p>Une chaîne de Markov est une suite $X_1, X_2, \dots$ à valeurs dans un ensemble fini $E$ telle que, sachant le présent, le futur ne dépend pas du passé. Elle est entièrement décrite par une loi initiale $\mu$ et une matrice de transition $P$, où $P(x,y)$ est la probabilité de passer de $x$ à $y$ en un pas.</p>
+
+<h3 id="markov-rappels">Rappels utiles pour la statistique</h3>
+<dl class="layers">
+  <dt>Probabilité invariante</dt><dd><p>Une probabilité $\pi$ est invariante si $\pi P = \pi$ (Définition 5, p. 17). Si la chaîne démarre selon $\pi$, la loi de $X_n$ ne change plus.</p>
+  <p><b>Proposition (Corollaire 1, p. 17).</b> Une chaîne irréductible sur un ensemble fini est récurrente positive et admet une unique probabilité invariante, donnée par $\pi(x) = 1/\mathbb{E}_x(T_x)$.</p>
+  <p><b>À quoi ça sert :</b> $\pi(x)$ est la proportion de temps passée en $x$ à long terme. C'est elle qui apparaît dans la variance des estimateurs.</p>
+  <p><b>Analogie :</b> la répartition des clients entre les rayons d'un magasin après l'ouverture. Les clients bougent sans cesse, mais la proportion présente dans chaque rayon se stabilise. Si on revient en moyenne au rayon « fruits » toutes les 4 visites, on y passe un quart du temps.</p></dd>
+  <dt>Théorème ergodique</dt><dd><p>Pour une chaîne irréductible récurrente positive, $\frac1n\sum_{k=1}^n f(X_k) \to \sum_x f(x)\pi(x)$ presque sûrement (p. 24). En particulier $N_n(x)/n \to \pi(x)$.</p>
+  <p><b>À quoi ça sert :</b> c'est la loi des grands nombres des chaînes de Markov. Elle donne la consistance de l'EMV.</p>
+  <p><b>Analogie :</b> regarder une seule personne très longtemps revient à photographier une foule à un instant donné.</p></dd>
+  <dt>Chaîne absorbante</dt><dd><p>Si l'on écrit $P = \begin{pmatrix} I & 0 \\ A & T\end{pmatrix}$ avec les états absorbants en premier, alors $F = (I - T)^{-1} = I + T + T^2 + \cdots$ et $F(i,j)$ est le nombre moyen de passages en $j$ en partant de $i$. <b>La somme de la ligne $i$ de $F$ est le nombre moyen de pas avant absorption</b> (Proposition 7, p. 21).</p>
+  <p><b>À quoi ça sert :</b> calculer un temps moyen d'extinction d'épidémie (TP 1, exercice 2) ou de ruine.</p>
+  <p><b>Analogie :</b> $T$ décrit les déplacements entre pièces d'une maison avant de trouver la sortie ; $F$ compte combien de fois on repasse dans chaque pièce, en moyenne.</p></dd>
+</dl>
+
+<h3 id="markov-emv">Estimer la matrice de transition</h3>
+<dl class="layers">
+  <dt>La question</dt><dd><p>On observe une seule trajectoire $X_1,\dots,X_n$. Quelle matrice $P$ l'a produite ?</p></dd>
+  <dt>Observé</dt><dd><p>La suite des états. On travaille <b>conditionnellement au premier état</b> $X_1$ : sa loi $\mu$ n'est pas estimée.</p></dd>
+  <dt>Inconnu</dt><dd><p>Les $P(x,y)$, avec $P(x,y)\ge 0$ et $\sum_y P(x,y) = 1$ pour chaque ligne $x$.</p></dd>
+  <dt>Vraisemblance</dt><dd><div class="eq">$$\mathbb P(X_2=x_2,\dots,X_n=x_n \mid X_1=x_1) = P(x_1,x_2)\cdots P(x_{n-1},x_n) = \prod_{(x,y)\in E^2} P(x,y)^{N_n(x,y)}$$</div>
+  <p>avec $N_n(x,y) = \sum_{i=1}^{n-1}\mathbf 1\{X_i=x,X_{i+1}=y\}$, le nombre de transitions observées de $x$ vers $y$, et $N_n(x+) = \sum_y N_n(x,y)$ le nombre de départs depuis $x$.</p>
+  <p class="reading">On regroupe les facteurs identiques : seule compte la table des comptages, pas l'ordre des transitions.</p></dd>
+  <dt>Maximisation</dt><dd><div class="eq">$$\ell(P)=\sum_{x\in E}\ \sum_{y\in E} N_n(x,y)\ln P(x,y).$$</div>
+  <p>Les lignes ne partagent aucun paramètre : on maximise ligne par ligne. Pour une ligne $x$ avec $N_n(x+)>0$, le <b>Lemme 2 (p. 29)</b> dit que pour deux probabilités $p$ et $q$ sur $E$, $\sum_y q_y\ln p_y \le \sum_y q_y \ln q_y$, avec égalité seulement si $p=q$. On l'applique avec $q_y = N_n(x,y)/N_n(x+)$ :</p>
+  <div class="eq">$$\boxed{\hat P(x,y) = \frac{N_n(x,y)}{N_n(x+)}}$$</div>
+  <p class="reading">La probabilité estimée d'aller de $x$ à $y$ est la fréquence observée de ce saut parmi les départs depuis $x$.</p></dd>
+  <dt>À quoi ça sert</dt><dd><p>Ajuster une chaîne à une séquence d'ADN, à des états de santé, de météo, de crédit, puis prédire, simuler ou tester.</p></dd>
+  <dt>Analogie</dt><dd><p>Pour savoir où vont les voyageurs qui partent de Lyon, on compte les billets au départ de Lyon et on regarde la part de chaque destination. Les billets au départ de Paris n'apportent rien sur ceux de Lyon : c'est pour cela que la maximisation se fait ligne par ligne.</p></dd>
+  <dt>Cas limite</dt><dd><p>Si l'on n'a jamais quitté $x$ ($N_n(x+)=0$), la ligne $x$ n'est pas identifiable : n'importe quelle probabilité maximise. Le cours note que ce cas disparaît quand $n$ est grand.</p></dd>
+</dl>
+<p class="warn"><span class="label">Erreur fréquente</span>Diviser par $N_n(x)$, le nombre de <i>visites</i> de $x$ sur $1..n$, au lieu de $N_n(x+)$, le nombre de <i>départs</i> (visites sur $1..n-1$). Les deux diffèrent de 1 si la trajectoire finit en $x$. Autre erreur : diviser par $n-1$ (le nombre total de transitions), ce qui mélange toutes les lignes.</p>
+
+<h4>Exemple complet <span class="synthetic">données d'enseignement</span></h4>
+<div class="data"><span class="label">Trajectoire observée, $n = 21$, $E=\{0,1\}$</span><span class="mono">0 0 1 1 1 0 0 0 1 0 1 1 0 0 0 0 1 1 1 1 0</span></div>
+<p>On parcourt les 20 transitions et on remplit la table des comptages :</p>
+<div class="tablewrap"><table><thead><tr><th>depuis \ vers</th><th>0</th><th>1</th><th>$N_n(x+)$</th></tr></thead>
+<tbody><tr><td>0</td><td>6</td><td>4</td><td>10</td></tr><tr><td>1</td><td>4</td><td>6</td><td>10</td></tr></tbody></table></div>
+<p>Contrôle : $6+4+4+6 = 20 = n-1$. Avec la paramétrisation du cours $P=\begin{pmatrix}1-p & p\\ q & 1-q\end{pmatrix}$ :</p>
+<div class="eq">$$\hat p = \frac{N_n(0,1)}{N_n(0+)} = \frac{4}{10} = 0{,}4, \qquad \hat q = \frac{N_n(1,0)}{N_n(1+)} = \frac{4}{10}=0{,}4.$$</div>
+<p>La log-vraisemblance maximale vaut $6\ln 0{,}6 + 4\ln 0{,}4 + 4\ln 0{,}4 + 6\ln 0{,}6 \approx -13{,}46$. La loi invariante estimée de la chaîne à deux états est $\hat\pi = \big(\hat q/(\hat p+\hat q),\ \hat p/(\hat p+\hat q)\big) = (0{,}5;\ 0{,}5)$.</p>
+<p><b>Interprétation :</b> quand le système est dans l'état 0, il y reste 6 fois sur 10 au pas suivant ; à long terme il passe autant de temps dans les deux états.</p>
+
+<div class="tool" id="tool-markov">
+  <h4>Calculateur : comptages, $\hat P$, loi invariante, intervalles</h4>
+  <p class="assume">Hypothèses : chaîne homogène, vraisemblance conditionnelle au premier état. Tapez les états (chiffres 0 à 9) séparés ou non par des espaces.</p>
+  <div class="row"><label class="f" for="mk-seq">Trajectoire<input id="mk-seq" class="wide" type="text" value="0 0 1 1 1 0 0 0 1 0 1 1 0 0 0 0 1 1 1 1 0"></label><button class="act" type="button" id="mk-go">Estimer</button></div>
+  <div class="out" id="mk-out" aria-live="polite"></div>
+</div>
+
+<h3 id="markov-asympt">Précision de l'estimateur : la loi asymptotique</h3>
+<dl class="layers">
+  <dt>Proposition 8 (p. 30)</dt><dd><p>Pour une chaîne irréductible sur $E$ fini, de loi invariante $\pi$, $\hat P$ est fortement consistant et</p>
+  <div class="eq">$$\sqrt n\Big(\hat P(x,y)-P(x,y)\Big)_{x,y} \xrightarrow{\ \mathcal L\ } \mathcal N(0,\Sigma), \quad \operatorname{Cov}(Z_{x,y},Z_{x',y'}) = \frac{P(x,y)\big(\mathbf 1_{y=y'} - P(x',y')\big)}{\pi(x)}\,\mathbf 1_{x=x'}.$$</div>
+  <p>En particulier, pour une case : $\sqrt n\big(\hat P(x,y)-P(x,y)\big) \to \mathcal N\!\left(0,\ \dfrac{P(x,y)(1-P(x,y))}{\pi(x)}\right)$, et deux lignes différentes sont asymptotiquement indépendantes.</p></dd>
+  <dt>Ce que ça dit</dt><dd><p>C'est la variance d'une proportion binomiale $p(1-p)/m$, avec un nombre d'essais $m \approx n\,\pi(x)$ : le nombre de départs depuis $x$. Moins on visite $x$, moins on connaît sa ligne.</p></dd>
+  <dt>À quoi ça sert</dt><dd><p>Construire un intervalle de confiance et des tests (TP 1, Examen 2024). En pratique on estime $\sigma^2$ par $\hat\sigma^2 = \hat P(1-\hat P)/\hat\pi(x)$ avec $\hat\pi(x) = N_n(x+)/n$, ce qui revient à :</p>
+  <div class="eq">$$\hat P(x,y) \pm 1{,}96\sqrt{\frac{\hat P(x,y)\big(1-\hat P(x,y)\big)}{N_n(x+)}}.$$</div></dd>
+  <dt>Analogie</dt><dd><p>Un sondage dont la taille d'échantillon n'est pas fixée à l'avance mais vaut « le nombre de fois où l'on est passé par $x$ ». Un état rarement visité, c'est un sondage auprès de trois personnes.</p></dd>
+  <dt>D'où ça vient</dt><dd><p>Le TLC des chaînes de Markov (Théorème 2, p. 26) appliqué à la chaîne des couples $(X_{k-1},X_k)$ (Corollaires 3 et 4) : $\frac{1}{\sqrt n}\big(N_n(x,y) - P(x,y)N_n(x+)\big)$ est une somme de termes centrés, puis on divise par $N_n(x+)/n \to \pi(x)$ (théorème ergodique et Slutsky).</p></dd>
+</dl>
+<p>Sur l'exemple : $\hat p = 0{,}4$ avec $N_n(0+) = 10$ donne $0{,}4 \pm 1{,}96\sqrt{0{,}24/10} = 0{,}4\pm 0{,}30$, soit $[0{,}10 ;\ 0{,}70]$. Avec seulement 10 départs, l'intervalle est large : c'est l'honnêteté de la formule.</p>
+
+<div class="tool" id="tool-tlc">
+  <h4>Simulation : la loi gaussienne apparaît-elle vraiment ? (TP 1, exercice 1)</h4>
+  <p class="assume">On simule $N$ trajectoires de longueur $n$ d'une chaîne à deux états, on calcule $S_n = \sqrt n(\hat p-p)/\hat\sigma$ avec $\hat\sigma^2 = \hat p(1-\hat p)/\hat\pi(0)$, puis on compare l'histogramme à la densité $\mathcal N(0,1)$.</p>
+  <div class="row">
+    <label class="f" for="tl-n">n<input id="tl-n" class="num" type="number" value="100" min="10" max="5000"></label>
+    <label class="f" for="tl-p">p<input id="tl-p" class="num" type="number" value="0.7" step="0.05" min="0.05" max="0.95"></label>
+    <label class="f" for="tl-q">q<input id="tl-q" class="num" type="number" value="0.5" step="0.05" min="0.05" max="0.95"></label>
+    <label class="f" for="tl-N">N simulations<input id="tl-N" class="num" type="number" value="500" min="50" max="5000"></label>
+    <button class="act" type="button" id="tl-go">Simuler</button>
+  </div>
+  <div class="out" id="tl-out" aria-live="polite"></div>
+</div>
+
+<h3 id="markov-tests">Tests sur une chaîne de Markov</h3>
+<dl class="layers">
+  <dt>Théorème 3 (p. 31)</dt><dd><p>Pour tester $H_0$ : « la transition vaut $P$ », la statistique</p>
+  <div class="eq">$$T_n = \sum_{(x,y):\,P(x,y)>0} \frac{\big(N_n(x,y) - P(x,y)N_n(x+)\big)^2}{P(x,y)N_n(x+)}$$</div>
+  <p>converge en loi vers un $\chi^2$ à $k-|E|$ degrés de liberté, où $k$ est le nombre de couples autorisés ($P(x,y)>0$). On rejette si $T_n \ge \chi^2_{k-|E|}(1-\alpha)$.</p></dd>
+  <dt>Ce que ça dit</dt><dd><p>On compare, case par case, les transitions observées et celles attendues si $H_0$ était vraie, comme un $\chi^2$ d'adéquation classique. Chaque ligne perd un degré de liberté parce que ses cases somment déjà à $N_n(x+)$.</p></dd>
+  <dt>Analogie</dt><dd><p>On compare le nombre de bus réellement partis de chaque arrêt vers chaque direction avec le nombre annoncé par la fiche horaire.</p></dd>
+  <dt>Sur l'exemple</dt><dd><p>Pour $H_0$ : $P = \begin{pmatrix}0{,}5&0{,}5\\0{,}5&0{,}5\end{pmatrix}$, chaque case attendue vaut 5 : $T_n = 4\times\frac{(6-5)^2 \text{ ou } (4-5)^2}{5} = 0{,}8$, avec $4-2 = 2$ degrés de liberté. Le seuil à 5 % est $5{,}99$ : on ne rejette pas.</p></dd>
+  <dt>Rapport de vraisemblance</dt><dd><p>Pour tester l'indépendance (TP 1) : sous $H_0$ toutes les lignes sont égales et $\hat P_{n,0}(x,y) = \frac{1}{n-1}\sum_i \mathbf 1\{X_{i+1}=y\}$. La statistique $W_n = 2\sum_{x,y} N_n(x,y)\ln\frac{\hat P_n(x,y)}{\hat P_{n,0}(x,y)}$ est $2(\ell(\hat P_n)-\ell(\hat P_{n,0}))$ et suit asymptotiquement un $\chi^2\big((|E|-1)^2\big)$. Voir l'exercice 5 de l'atelier.</p></dd>
+</dl>
+<p class="note">Pour choisir l'ordre d'une chaîne (TP 1, ordre 1 ou 2), on compare $\mathrm{BIC}(m) = -\ln \hat L_{m,n} + \frac{|E|^m(|E|-1)}{2}\ln n$ et on garde l'ordre qui le minimise. Une chaîne d'ordre 2 sur $E$ est une chaîne d'ordre 1 sur les couples : son EMV compte les triplets.</p>
+<p class="src">Polycopié, section 2.2 à 2.4 (p. 15 à 32), TP 1.</p>
+</section>
+<section id="poisson">
+<h2>Processus de Poisson</h2>
+<p><b>Pourquoi ce modèle ?</b> Beaucoup de phénomènes sont des <i>événements ponctuels</i> qui arrivent sans prévenir : désintégrations radioactives, pannes, appels, contaminations. Le processus de Poisson est le modèle le plus simple où les arrivées sont « aussi imprévisibles que possible » : le passé ne dit rien sur le futur, et le nombre d'arrivées dans un intervalle ne dépend que de sa longueur.</p>
+<dl class="layers">
+  <dt>Définition</dt><dd><p>$(N_t)_{t\ge0}$ compte les événements sur $[0,t]$. Le processus de Poisson d'intensité $\lambda>0$ a des accroissements indépendants et $N_t - N_s \sim \mathcal P\big(\lambda(t-s)\big)$. Les délais entre événements sont i.i.d. de loi exponentielle $\mathcal E(\lambda)$.</p></dd>
+  <dt>Ce que représente λ</dt><dd><p>Le nombre moyen d'événements par unité de temps. Sur une durée $t$, on en attend $\lambda t$.</p></dd>
+  <dt>Analogie</dt><dd><p>Des gouttes de pluie sur une dalle : on ne sait jamais quand tombera la prochaine, mais sur une heure on en compte à peu près toujours le même nombre.</p></dd>
+</dl>
+
+<h3 id="poisson-schemas">Trois façons d'observer, trois vraisemblances (p. 51-52)</h3>
+<p>La leçon principale de cette section : <b>l'estimateur se ressemble, mais la vraisemblance dépend de ce qu'on a observé</b>.</p>
+<figure>
+<svg viewBox="0 0 640 150" role="img" aria-labelledby="pp-t pp-d"><title id="pp-t">Trois schémas d'observation d'un processus de Poisson</title><desc id="pp-d">Ligne du temps avec des événements. Schéma 1 : on observe tout sur l'intervalle de 0 à t. Schéma 2 : on s'arrête au n-ième événement T_n. Schéma 3 : on ne connaît que les comptages entre des dates fixes.</desc>
+<line x1="30" y1="40" x2="610" y2="40" stroke="currentColor" stroke-opacity=".4"/>
+<g fill="#2b5d8a"><circle cx="70" cy="40" r="5"/><circle cx="130" cy="40" r="5"/><circle cx="150" cy="40" r="5"/><circle cx="260" cy="40" r="5"/><circle cx="330" cy="40" r="5"/><circle cx="420" cy="40" r="5"/><circle cx="470" cy="40" r="5"/><circle cx="560" cy="40" r="5"/></g>
+<rect x="30" y="58" width="560" height="10" fill="#1f6f5c" opacity=".35"/><text x="30" y="84" font-size="12">1. tout observé sur [0, t] : on connaît N_t et les dates</text>
+<rect x="30" y="92" width="440" height="10" fill="#b4641b" opacity=".4"/><text x="30" y="118" font-size="12">2. arrêt au n-ième saut T_n (ici n = 7)</text>
+<g stroke="currentColor" stroke-opacity=".7"><line x1="30" y1="128" x2="30" y2="142"/><line x1="170" y1="128" x2="170" y2="142"/><line x1="380" y1="128" x2="380" y2="142"/><line x1="590" y1="128" x2="590" y2="142"/></g>
+<text x="80" y="140" font-size="12">3</text><text x="260" y="140" font-size="12">2</text><text x="470" y="140" font-size="12">3</text><text x="600" y="146" font-size="11">comptages</text>
+<text x="585" y="30" font-size="12">t</text><text x="462" y="30" font-size="12">T_n</text>
+</svg>
+<figcaption>À retenir : ce qui distingue les schémas n'est pas le processus, mais l'information disponible et la règle d'arrêt.</figcaption>
+</figure>
+<div class="tablewrap"><table class="cmp"><thead><tr><th>Schéma</th><th>Ce qu'on observe</th><th>Vraisemblance (à une constante près)</th><th>EMV</th></tr></thead><tbody>
+<tr><td>1. Fenêtre fixe</td><td>$N_t=n$ et les dates $t_1<\dots<t_n\le t$</td><td>$\lambda^n e^{-\lambda t}$</td><td>$\hat\lambda = N_t/t$</td></tr>
+<tr><td>2. Jusqu'au $n$-ième saut</td><td>$T_1,\dots,T_n$, on s'arrête à $T_n$</td><td>$\lambda^n e^{-\lambda T_n}$</td><td>$\hat\lambda = n/T_n$</td></tr>
+<tr><td>3. Comptages à dates fixes</td><td>$d_i = N_{t_i}-N_{t_{i-1}}$</td><td>$e^{-\lambda t_n}\lambda^{\sum d_i}$</td><td>$\hat\lambda = N_{t_n}/t_n$</td></tr>
+</tbody></table></div>
+<dl class="layers">
+  <dt>Dérivation (schéma 1)</dt><dd><p>Sachant $N_t=n$, les dates ont la densité $n!/t^n$ sur $\{0<t_1<\dots<t_n\le t\}$ (Proposition 15). Donc</p>
+  <div class="eq">$$L(\lambda) = \frac{n!}{t^n}\cdot e^{-\lambda t}\frac{(\lambda t)^n}{n!} = \lambda^n e^{-\lambda t},\qquad \ell'(\lambda) = \frac n\lambda - t = 0 \iff \hat\lambda = \frac nt.$$</div>
+  <p class="reading">Les dates n'apportent aucune information sur $\lambda$ une fois le nombre connu : $N_t$ est exhaustive.</p></dd>
+  <dt>Intervalle (schéma 1)</dt><dd><div class="eq">$$\sqrt{\frac{t^2}{N_t}}\left(\frac{N_t}{t}-\lambda\right)\to\mathcal N(0,1) \quad\Rightarrow\quad \frac{N_t}{t}\pm q_{1-\alpha/2}\frac{\sqrt{N_t}}{t}.$$</div></dd>
+  <dt>Intervalle (schéma 2)</dt><dd><p>$T_n$ est une somme de $n$ exponentielles i.i.d., donc $\sqrt n\big(\lambda T_n/n - 1\big)\to\mathcal N(0,1)$, d'où l'intervalle $\Big[\frac{n}{T_n}\big(1-\frac{q}{\sqrt n}\big),\ \frac{n}{T_n}\big(1+\frac{q}{\sqrt n}\big)\Big]$ avec $q = q_{1-\alpha/2}$.</p></dd>
+  <dt>Cas limite</dt><dd><p>Si $N_t = 0$, la vraisemblance $e^{-\lambda t}$ décroît : le maximum est au bord, $\hat\lambda = 0$ si l'on admet $\lambda = 0$, et il n'existe pas de maximum intérieur si l'on impose $\lambda>0$.</p></dd>
+</dl>
+<h4>Exemple <span class="synthetic">données d'enseignement</span></h4>
+<p>Un compteur Geiger enregistre $n = 23$ désintégrations en $t = 10$ minutes. Alors $\hat\lambda = 2{,}3$ par minute et l'intervalle à 95 % est $2{,}3 \pm 1{,}96\sqrt{23}/10 = 2{,}3\pm0{,}94$, soit $[1{,}36 ;\ 3{,}24]$. Si l'on avait seulement les comptages $4, 7, 3, 9$ entre les dates $0, 2, 5, 6, 10$, on trouverait le même $\hat\lambda = 23/10$ : seule la somme compte.</p>
+<div class="tool" id="tool-poisson">
+  <h4>Calculateur : intensité d'un processus de Poisson</h4>
+  <p class="assume">Choisissez le schéma. L'exposition (le temps au dénominateur) est affichée explicitement.</p>
+  <div class="row">
+    <label class="f" for="po-n">nombre d'événements n<input id="po-n" class="num" type="number" value="23" min="0"></label>
+    <label class="f" for="po-t">temps (t ou T_n)<input id="po-t" class="num" type="number" value="10" min="0" step="0.1"></label>
+    <label class="f" for="po-s">schéma<select id="po-s"><option value="1">1. fenêtre fixe [0, t]</option><option value="2">2. arrêt au n-ième saut</option></select></label>
+    <button class="act" type="button" id="po-go">Calculer</button>
+  </div>
+  <div class="out" id="po-out" aria-live="polite"></div>
+</div>
+
+<h3 id="weibull">Processus de Poisson non homogène : le modèle de Weibull</h3>
+<p><b>Pourquoi ?</b> Un taux constant est souvent faux : une machine qui vieillit tombe de plus en plus souvent en panne, une épidémie s'accélère puis ralentit. On laisse l'intensité dépendre du temps.</p>
+<dl class="layers">
+  <dt>Définition</dt><dd><p>Intensité $\lambda(s)$ et intensité cumulée $\Lambda(t) = \int_0^t\lambda(s)\,ds$ : $N_t \sim \mathcal P(\Lambda(t))$, accroissements indépendants.</p></dd>
+  <dt>Proposition 17</dt><dd><p>Sachant $N_t=n$, les dates ont la loi des statistiques d'ordre d'un échantillon de densité $\lambda(x)/\Lambda(t)$ sur $[0,t]$. On en déduit la vraisemblance d'une trajectoire observée sur $[0,t]$ :</p>
+  <div class="eq">$$L(\theta) = \prod_{i=1}^n \lambda_\theta(t_i)\ \exp\!\big(-\Lambda_\theta(t)\big),\qquad \ell(\theta) = \sum_{i=1}^n \ln\lambda_\theta(t_i) - \Lambda_\theta(t).$$</div>
+  <p class="reading">Le premier terme récompense une intensité forte là où des événements ont eu lieu ; le second pénalise une intensité forte sur toute la fenêtre, y compris là où il ne s'est rien passé.</p></dd>
+  <dt>Analogie</dt><dd><p>Régler la sensibilité d'une alarme : plus elle est sensible, mieux elle explique les vrais incidents, mais plus elle « aurait dû » sonner pendant les heures calmes.</p></dd>
+  <dt>Weibull (p. 56)</dt><dd><div class="eq">$$\lambda_{\alpha,\beta}(s) = \frac\beta\alpha\Big(\frac s\alpha\Big)^{\beta-1},\qquad \Lambda_{\alpha,\beta}(t) = \Big(\frac t\alpha\Big)^\beta,$$</div>
+  <div class="eq">$$\ell(\alpha,\beta) = n\big(\ln\beta-\beta\ln\alpha\big) + (\beta-1)\sum_{i=1}^n\ln t_i - \Big(\frac t\alpha\Big)^\beta.$$</div>
+  <p>$\beta>1$ : les événements s'accélèrent (usure) ; $\beta<1$ : ils ralentissent ; $\beta=1$ : Poisson homogène de taux $1/\alpha$.</p></dd>
+  <dt>EMV</dt><dd><div class="eq">$$\frac1{\hat\beta} = \ln t - \frac1n\sum_{i=1}^n\ln t_i, \qquad \ln\hat\alpha = \ln t - \frac1{\hat\beta}\ln n.$$</div>
+  <p>Le cours justifie qu'il s'agit bien du maximum en posant $\lambda = \alpha^{-\beta}$ : pour $\beta$ fixé la fonction est concave en $\lambda$, maximale en $\lambda = n t^{-\beta}$, puis la fonction profilée $h(\beta)$ est concave en $\beta$. Conséquence utile : $\Lambda_{\hat\alpha,\hat\beta}(t) = n$, le modèle ajusté « prévoit » exactement le nombre observé.</p></dd>
+  <dt>Proposition 18</dt><dd><p>Sachant $N_t = n\ge1$, $2n\beta/\hat\beta \sim \chi^2(2n)$. D'où l'intervalle de niveau $\gamma$ : $\Big[\frac{\hat\beta}{2n}\chi^2_{(1-\gamma)/2}(2n),\ \frac{\hat\beta}{2n}\chi^2_{(1+\gamma)/2}(2n)\Big]$.</p></dd>
+</dl>
+<h4>Exemple <span class="synthetic">données d'enseignement</span></h4>
+<p>Pannes d'une pompe sur $t=10$ mois, aux dates $1{,}2;\ 2{,}9;\ 4{,}1;\ 5{,}5;\ 6{,}3;\ 7{,}8;\ 8{,}6;\ 9{,}4$ ($n=8$). On a $\sum\ln t_i = 12{,}650$, donc $1/\hat\beta = \ln 10 - 12{,}650/8 = 0{,}7213$, $\hat\beta = 1{,}386$, puis $\ln\hat\alpha = 2{,}3026 - 0{,}7213\ln 8 = 0{,}8027$, $\hat\alpha = 2{,}231$. Vérification : $(10/2{,}231)^{1{,}386} = 8 = n$. Avec $\chi^2_{0,025}(16) = 6{,}908$ et $\chi^2_{0,975}(16) = 28{,}845$, l'intervalle à 95 % pour $\beta$ est $[0{,}60 ;\ 2{,}50]$.</p>
+<p><b>Interprétation :</b> $\hat\beta>1$ suggère une usure, mais l'intervalle contient 1 : avec 8 pannes, on ne peut pas exclure un taux constant.</p>
+<div class="tool" id="tool-weibull">
+  <h4>Calculateur : processus de Weibull observé sur [0, t]</h4>
+  <p class="assume">Dates strictement positives et inférieures à t, séparées par des espaces ou des points-virgules. Les quantiles du $\chi^2$ sont approchés par la formule de Wilson-Hilferty (précision d'environ deux décimales).</p>
+  <div class="row"><label class="f" for="wb-t">t<input id="wb-t" class="num" type="number" value="10" step="0.1"></label>
+  <label class="f" for="wb-d">dates des événements<input id="wb-d" class="wide" type="text" value="1.2 2.9 4.1 5.5 6.3 7.8 8.6 9.4"></label><button class="act" type="button" id="wb-go">Estimer</button></div>
+  <div class="out" id="wb-out" aria-live="polite"></div>
+</div>
+<p class="src">Polycopié, section 3.1 et 3.2 (p. 47 à 57) ; diaporama « Processus de Poisson homogène et non homogène » ; Examen 2024, exercice 3.</p>
+</section>
+
+<section id="sauts">
+<h2>Processus de Markov de sauts</h2>
+<p><b>Pourquoi ?</b> Une chaîne de Markov avance par pas réguliers. Mais une machine tombe en panne à un instant quelconque, un patient change d'état à n'importe quel moment. On veut une chaîne qui <i>attend un temps aléatoire</i> dans chaque état avant de sauter. Le processus de Poisson est le cas où il n'y a qu'un seul « type » de saut, toujours vers le haut.</p>
+
+<h3 id="sauts-structure">Générateur, chaîne immergée, temps de séjour</h3>
+<dl class="layers">
+  <dt>Pourquoi un générateur ?</dt><dd><p>En temps continu, la loi du processus est donnée par une famille de matrices $P_t(x,y) = \mathbb P(X_t=y\mid X_0=x)$ pour <i>chaque</i> $t\ge0$ : c'est trop d'objets à manipuler et à estimer. Mais les équations de Chapman-Kolmogorov $P_{t+s} = P_tP_s$ imposent que tout soit déterminé par le comportement en temps très court. Le générateur est cette information minimale :</p>
+  <div class="eq">$$A = \lim_{h\to0^+}\frac{P_h - I}{h},\qquad P_h(x,y) = A(x,y)\,h + o(h)\ (x\ne y),\qquad P_t = e^{tA}.$$</div>
+  <p><b>À quoi ça sert :</b> un seul tableau de nombres, interprétables comme des <b>taux</b> (événements par unité de temps), décrit tout le processus. C'est lui qu'on estime, qu'on simule et dont on tire la loi invariante.</p>
+  <p><b>Analogie :</b> la position d'une voiture à chaque instant ($P_t$) contre son compteur de vitesse ($A$). Connaître la vitesse à chaque instant suffit pour reconstituer tout le trajet ; et la vitesse se lit directement, sans attendre.</p></dd>
+  <dt>Propriétés du générateur</dt><dd><p>$A(x,y)\ge0$ pour $x\ne y$ (taux de saut de $x$ vers $y$), et chaque ligne somme à zéro : $A(x,x) = -a(x)$ avec $a(x) = \sum_{y\ne x}A(x,y)$, le taux total de départ de $x$.</p></dd>
+  <dt>Proposition 24 (p. 68)</dt><dd><p>1. La suite des états visités $Z_n = X_{T_n}$ est une chaîne de Markov, la <b>chaîne immergée</b>, de transition $Q(x,y) = A(x,y)/a(x)$ pour $y\ne x$ (si $a(x)>0$).<br>2. Sachant les états visités, les temps de séjour sont indépendants de lois $\mathcal E\big(a(Z_0)\big), \mathcal E\big(a(Z_1)\big),\dots$</p>
+  <p><b>Ce que ça dit :</b> un processus de sauts, c'est « <b>combien de temps</b> on reste » (exponentielle de paramètre $a(x)$) puis « <b>où</b> on va » (chaîne $Q$). <b>À quoi ça sert :</b> c'est exactement l'algorithme de simulation demandé à l'examen.</p>
+  <p><b>Analogie :</b> un client dans un centre commercial. Le temps qu'il passe dans une boutique dépend de la boutique ; quand il sort, il choisit la suivante selon des préférences fixes.</p></dd>
+  <dt>Simulation</dt><dd><p>À partir de $x$ : tirer $S\sim\mathcal E(a(x))$, avancer le temps de $S$, tirer le nouvel état $y$ avec probabilité $A(x,y)/a(x)$, recommencer. Si $a(x)=0$, l'état est absorbant.</p></dd>
+  <dt>Loi invariante (Prop. 28)</dt><dd><p>$\pi$ est invariante si et seulement si $\pi A = 0$. <b>Attention</b> : ce n'est pas la loi invariante $m$ de la chaîne immergée. Les deux sont liées par $\pi(x)\propto m(x)/a(x)$ : un état où l'on reste longtemps ($a(x)$ petit) pèse plus en temps continu qu'en nombre de visites.</p>
+  <p><b>Exemple du cours :</b> $A = \begin{pmatrix}-\lambda&\lambda\\ \mu&-\mu\end{pmatrix}$ a $\pi = \big(\frac{\mu}{\lambda+\mu},\frac{\lambda}{\lambda+\mu}\big)$ alors que $Q = \begin{pmatrix}0&1\\1&0\end{pmatrix}$ a $m = (\frac12,\frac12)$.</p></dd>
+  <dt>Théorème 9</dt><dd><p>$\frac1t\int_0^t\mathbf 1\{X_s=x\}ds \to \pi(x)$ p.s. : la fraction du temps passée en $x$ converge vers $\pi(x)$. C'est la base de la consistance de l'EMV ci-dessous.</p></dd>
+</dl>
+
+<h3 id="sauts-emv">Estimer le générateur (section 4.4, p. 70-71)</h3>
+<dl class="layers">
+  <dt>Observé</dt><dd><p>Une trajectoire sur $[0,t]$ : les états visités et les dates des sauts. On la résume par $N_t(x,y)$, le nombre de sauts de $x$ vers $y$, et $R_t(x) = \int_0^t\mathbf 1\{X_s=x\}ds$, le <b>temps total passé en $x$</b>.</p></dd>
+  <dt>Vraisemblance</dt><dd><p>Chaque séjour en $x$ de durée $s$ suivi d'un saut vers $y$ contribue $a(x)e^{-a(x)s}\cdot\frac{A(x,y)}{a(x)} = A(x,y)e^{-a(x)s}$ ; le dernier séjour, interrompu en $t$, contribue $e^{-a(x)(t-T_n)}$. En regroupant :</p>
+  <div class="eq">$$\ell(A) = \sum_{x\ne y}\Big\{N_t(x,y)\ln A(x,y) - A(x,y)R_t(x)\Big\}.$$</div></dd>
+  <dt>EMV</dt><dd><p>Chaque taux apparaît dans un seul terme ; on dérive : $\frac{N_t(x,y)}{A(x,y)} - R_t(x) = 0$, d'où</p>
+  <div class="eq">$$\boxed{\hat A(x,y) = \frac{N_t(x,y)}{R_t(x)}}\ (x\ne y),\qquad \hat A(x,x) = -\sum_{y\ne x}\hat A(x,y).$$</div>
+  <p class="reading">Un taux, c'est un nombre d'événements divisé par le temps pendant lequel ils pouvaient se produire.</p></dd>
+  <dt>Analogie</dt><dd><p>Un taux d'accident se calcule en accidents par heure de conduite, pas par trajet ni par jour calendaire. Le dénominateur est le <b>temps à risque</b> dans l'état de départ.</p></dd>
+  <dt>Paramètres partagés</dt><dd><p>Si plusieurs cases du générateur valent le même paramètre, on additionne leurs termes avant de dériver. Exemple de l'examen (naissance-mort sur $\{0,\dots,N\}$, taux $p$ vers le haut, $q$ vers le bas) :</p>
+  <div class="eq">$$\hat p = \frac{\sum_{n=0}^{N-1}N_T(n,n+1)}{\sum_{n=0}^{N-1}R_T(n)},\qquad \hat q = \frac{\sum_{n=1}^{N}N_T(n,n-1)}{\sum_{n=1}^{N}R_T(n)}.$$</div></dd>
+</dl>
+<p class="warn"><span class="label">Erreur fréquente</span>Diviser par le nombre de visites de $x$ (c'est l'EMV de la chaîne immergée $Q$, pas du générateur) ou par la durée totale $t$ (qui inclut le temps passé ailleurs, où le saut $x\to y$ était impossible).</p>
+<h4>Exemple <span class="synthetic">données d'enseignement</span></h4>
+<p>Un processus de naissance-mort sur $\{0,1,2\}$ observé sur $[0,10]$ : il est en 0 de 0 à 1,5, puis 1 jusqu'à 2,3, puis 2 jusqu'à 3,9, puis 1 jusqu'à 4,4, puis 0 jusqu'à 6,0, puis 1 jusqu'à 7,2, puis 0 jusqu'à 8,0, puis 1 jusqu'à 8,5, puis 2 jusqu'à 9,6, puis 1 jusqu'à 10.</p>
+<figure>
+<svg id="jump-svg" viewBox="0 0 640 190" role="img" aria-labelledby="js-t js-d"><title id="js-t">Trajectoire d'un processus de sauts</title><desc id="js-d">Trajectoire en escalier entre les états 0, 1 et 2 sur l'intervalle de temps de 0 à 10, avec le temps total passé dans chaque état.</desc></svg>
+<figcaption>Les segments horizontaux sont les séjours (dont la durée totale par état donne $R_t(x)$) ; les traits verticaux sont les sauts (qui donnent $N_t(x,y)$).</figcaption>
+</figure>
+<div class="tablewrap" id="jump-table"></div>
+<p>$\hat p = \frac{N(0,1)+N(1,2)}{R(0)+R(1)} = \frac{3+2}{3{,}9+3{,}4} = 0{,}685$ et $\hat q = \frac{N(1,0)+N(2,1)}{R(1)+R(2)} = \frac{2+2}{3{,}4+2{,}7} = 0{,}656$. Remarquez que $R(1)$ apparaît dans les deux dénominateurs : depuis l'état 1, les deux sauts étaient possibles.</p>
+<div class="tool" id="tool-jump">
+  <h4>Simulation puis estimation (Examen 2024, exercice 2)</h4>
+  <p class="assume">On simule un processus de naissance-mort sur $\{0,\dots,N\}$ avec l'algorithme « temps exponentiel puis chaîne immergée », puis on applique les EMV ci-dessus. Plus $T$ est grand, plus les estimations se rapprochent des vraies valeurs (consistance).</p>
+  <div class="row">
+    <label class="f" for="jp-N">N<input id="jp-N" class="num" type="number" value="4" min="1" max="30"></label>
+    <label class="f" for="jp-p">p (vers le haut)<input id="jp-p" class="num" type="number" value="1" step="0.1" min="0.01"></label>
+    <label class="f" for="jp-q">q (vers le bas)<input id="jp-q" class="num" type="number" value="1.5" step="0.1" min="0.01"></label>
+    <label class="f" for="jp-T">horizon T<input id="jp-T" class="num" type="number" value="500" min="1"></label>
+    <button class="act" type="button" id="jp-go">Simuler et estimer</button>
+  </div>
+  <div class="out" id="jp-out" aria-live="polite"></div>
+</div>
+
+<h3 id="sauts-extinction">Temps moyen avant extinction (TP 2, exercice 3)</h3>
+<dl class="layers">
+  <dt>Résultat</dt><dd><p>Pour une épidémie sur $\{0,\dots,m\}$ avec $A(n,n+1) = \alpha_n$, $A(n,n-1) = \beta_n$ et 0 absorbant, les temps moyens d'extinction $\mathbb E_i(\tau)$ résolvent</p>
+  <div class="eq">$$\big[A(i,j)\big]_{1\le i,j\le m}\begin{pmatrix}\mathbb E_1(\tau)\\ \vdots\\ \mathbb E_m(\tau)\end{pmatrix} = -\mathbf 1.$$</div></dd>
+  <dt>Pourquoi</dt><dd><p>Depuis $i$, on attend en moyenne $1/a(i)$, puis on repart d'un voisin : $\mathbb E_i(\tau) = \frac1{a(i)} + \sum_{j}\frac{A(i,j)}{a(i)}\mathbb E_j(\tau)$. En multipliant par $a(i)$ et en réarrangeant on obtient exactement la ligne $i$ du système. C'est l'analogue continu de $F=(I-T)^{-1}$.</p></dd>
+  <dt>Analogie</dt><dd><p>Le temps moyen pour sortir d'un labyrinthe : le temps passé dans la pièce actuelle plus le temps moyen depuis la pièce suivante.</p></dd>
+</dl>
+<div class="tool" id="tool-ext">
+  <h4>Calculateur : temps moyens d'extinction</h4>
+  <p class="assume">Taux constants $\alpha_n=\alpha$, $\beta_n=\beta$, population $m$. Le système linéaire est résolu par élimination de Gauss dans la page.</p>
+  <div class="row">
+    <label class="f" for="ex-m">m<input id="ex-m" class="num" type="number" value="10" min="1" max="60"></label>
+    <label class="f" for="ex-a">α (contamination)<input id="ex-a" class="num" type="number" value="0.4" step="0.05" min="0"></label>
+    <label class="f" for="ex-b">β (guérison)<input id="ex-b" class="num" type="number" value="0.6" step="0.05" min="0.01"></label>
+    <button class="act" type="button" id="ex-go">Calculer</button>
+  </div>
+  <div class="out" id="ex-out" aria-live="polite"></div>
+</div>
+<p class="src">Polycopié, chapitre 4 (p. 61 à 80) ; TP 2, exercices 2 et 3 ; Examen 2024, exercice 2.</p>
+</section>
+<section id="hmm">
+<h2>Modèles de Markov cachés</h2>
+<p><b>Pourquoi ?</b> Souvent, l'état qui gouverne le système ne se voit pas. On observe l'énergie produite par un panneau solaire, pas la nébulosité (exemple du cours, p. 37) ; on mesure un temps de réaction, pas l'attention du participant (TP 2). Un modèle de Markov caché suppose qu'un état invisible évolue comme une chaîne de Markov et que chaque observation dépend seulement de l'état du moment.</p>
+<figure>
+<svg viewBox="0 0 640 210" role="img" aria-labelledby="hm-t hm-d"><title id="hm-t">Structure d'un modèle de Markov caché</title><desc id="hm-d">En haut, les états cachés X1 à X5 reliés par des flèches horizontales de transition. En bas, les observations Y1 à Y5, chacune reliée à l'état caché au-dessus par une flèche verticale d'émission.</desc>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+<text x="10" y="58" font-size="12" fill="#b4641b">caché</text><text x="10" y="168" font-size="12" fill="#2b5d8a">observé</text>
+<g id="hm-nodes"></g>
+</svg>
+<figcaption>Deux couches : les flèches horizontales suivent la matrice $P$, les flèches verticales la loi d'émission $g(y\mid\beta,x)$. Sachant les états cachés, les observations sont indépendantes.</figcaption>
+</figure>
+<dl class="layers">
+  <dt>Modèle (p. 37)</dt><dd><p>$(X_t)$ chaîne de Markov sur $E$ fini, loi initiale $\mu$, transition $P$. Sachant $X_1,\dots,X_n$, les $Y_1,\dots,Y_n$ sont indépendantes de densités $g(\cdot\mid\beta,X_1),\dots,g(\cdot\mid\beta,X_n)$. Cas gaussien : $g(y\mid\beta,x)$ est la densité $\mathcal N(\beta_{1,x},\beta_{2,x})$ ($\beta_{2,x}$ est une <b>variance</b>).</p></dd>
+  <dt>Vraisemblance</dt><dd><div class="eq">$$L_n(\theta) = \sum_{x_1,\dots,x_n\in E}\mu(x_1)\prod_{i=1}^{n-1}P(x_i,x_{i+1})\prod_{j=1}^n g(Y_j\mid\beta,x_j),\qquad \theta=(P,\beta).$$</div>
+  <p class="reading">On additionne sur tous les scénarios cachés possibles, pondérés par leur probabilité. Il y en a $|E|^n$ : $2^{100}$ pour 100 observations à deux états, impossible à énumérer.</p></dd>
+  <dt>Les trois questions</dt><dd><p><b>Combien</b> les données sont-elles probables, et où était-on probablement à chaque instant ? (forward-backward). <b>Quels paramètres</b> ? (EM). <b>Quel scénario caché complet</b> est le plus probable ? (Viterbi).</p></dd>
+  <dt>Analogie</dt><dd><p>Deviner l'humeur d'un collègue (cachée) à partir de la longueur de ses mails (observée). L'humeur change avec une certaine inertie (Markov) ; la longueur d'un mail ne dépend que de l'humeur du jour.</p></dd>
+</dl>
+<h4>L'exemple qui sert pour tout le chapitre <span class="synthetic">données d'enseignement</span></h4>
+<div class="data"><span class="label">Temps de réaction (log, en ms) de 5 essais, inspirés du TP 2</span>
+$Y = (6{,}2;\ 5{,}7;\ 6{,}3;\ 6{,}1;\ 5{,}9)$. Deux états cachés : <span class="state1">1 = rapide</span>, <span class="state2">2 = lent</span>.<br>
+$\mu = (0{,}5;\ 0{,}5)$, $P = \begin{pmatrix}0{,}7&0{,}3\\0{,}3&0{,}7\end{pmatrix}$, émissions $\mathcal N(5{,}8;\ 0{,}09)$ dans l'état 1 et $\mathcal N(6{,}3;\ 0{,}09)$ dans l'état 2.</div>
+<div class="tablewrap" id="hmm-g"></div>
+
+<h3 id="hmm-fb">Forward-backward (section 2.6.2)</h3>
+<dl class="layers">
+  <dt>Forward (Prop. 9)</dt><dd><div class="eq">$$p_1(x) = \mu(x)g(Y_1\mid x),\qquad p_k(x) = g(Y_k\mid x)\sum_{x'\in E}p_{k-1}(x')P(x',x),\qquad L_n = \sum_{x}p_n(x).$$</div>
+  <p>$p_k(x)$ est la densité de $(X_k=x, Y_1,\dots,Y_k)$ : la somme sur tous les chemins qui <b>arrivent</b> en $x$ au temps $k$ en ayant produit les $k$ premières observations.</p></dd>
+  <dt>Backward (Prop. 10)</dt><dd><div class="eq">$$v_n(x) = 1,\qquad v_{k-1}(x) = \sum_{x'\in E}P(x,x')g(Y_k\mid x')v_k(x').$$</div>
+  <p>$v_k(x)$ est la vraisemblance du <b>futur</b> $Y_{k+1},\dots,Y_n$ sachant $X_k = x$.</p></dd>
+  <dt>Lissage (Prop. 11)</dt><dd><div class="eq">$$\gamma_k(x) = \mathbb P(X_k=x\mid Y_1,\dots,Y_n) = \frac{p_k(x)v_k(x)}{L_n},\qquad \xi_k(x,x') = \mathbb P(X_{k-1}=x,X_k=x'\mid Y) = \frac{p_{k-1}(x)P(x,x')g(Y_k\mid x')v_k(x')}{L_n}.$$</div></dd>
+  <dt>Pourquoi ça marche</dt><dd><p>On factorise la grande somme : au lieu d'énumérer $|E|^n$ chemins, on garde à chaque instant un résumé par état. Le coût devient linéaire en $n$ (environ $n|E|^2$ opérations).</p></dd>
+  <dt>Analogie</dt><dd><p>Pour savoir combien de chemins mènent à chaque carrefour d'une ville, on n'énumère pas tous les itinéraires : on additionne, carrefour par carrefour, les chemins qui arrivent des carrefours précédents. Le backward fait de même en partant de la destination.</p></dd>
+</dl>
+<div class="tool" id="tool-fwd">
+  <h4>Pas à pas : la récurrence forward</h4>
+  <p class="assume">Chaque pas montre le calcul de $p_k(x)$ pour les deux états à partir de $p_{k-1}$.</p>
+  <div class="stepper"><button class="ghost" type="button" id="fw-prev">Précédent</button><button class="act" type="button" id="fw-next">Suivant</button><button class="ghost" type="button" id="fw-reset">Recommencer</button><output id="fw-pos" aria-live="polite"></output></div>
+  <div class="out calc" id="fw-out" aria-live="polite"></div>
+</div>
+<div class="tablewrap" id="hmm-fb-table"></div>
+<p class="reading">Contrôles : chaque ligne de $\gamma$ somme à 1, chaque tableau $\xi_k$ somme à 1, et $\sum_{x'}\xi_k(x,x') = \gamma_{k-1}(x)$.</p>
+<div class="tablewrap" id="hmm-xi-table"></div>
+
+<h3 id="hmm-em">L'algorithme EM, ou Baum-Welch (section 2.6.1)</h3>
+<dl class="layers">
+  <dt>Pourquoi</dt><dd><p>Maximiser directement $L_n(\theta)$ est difficile : c'est un logarithme de somme. Si l'on connaissait les états cachés, l'estimation serait facile (comptages, moyennes par état). EM remplace l'inconnu par son <b>espérance conditionnelle</b> sachant les observations et les paramètres courants.</p></dd>
+  <dt>Le cours (p. 38)</dt><dd><p>Par Jensen, $\ln\frac{L_n(\theta)}{L_n(\theta')}\ge Q_n(\theta\mid\theta') - Q_n(\theta'\mid\theta')$ avec $Q_n(\theta\mid\theta') = \mathbb E_{\theta'}\big[\ln g(\theta,X,Y)\mid Y_1,\dots,Y_n\big]$. Donc augmenter $Q_n$ augmente la vraisemblance :</p>
+  <p><b>Étape E</b> : calculer $\theta\mapsto Q_n(\theta\mid\theta_j)$, ce qui revient à calculer les $\gamma_k$ et $\xi_k$ par forward-backward. <b>Étape M</b> : $\theta_{j+1} = \arg\max_\theta Q_n(\theta\mid\theta_j)$.</p>
+  <div class="eq">$$Q_n(\theta\mid\theta_j) = \sum_x\gamma_1(x)\ln\mu(x) + \sum_{k=2}^n\sum_{x,x'}\xi_k(x,x')\ln P(x,x') + \sum_{k=1}^n\sum_x\gamma_k(x)\ln g(Y_k\mid\beta,x).$$</div></dd>
+  <dt>Mises à jour</dt><dd><div class="eq">$$\mu^{\text{new}}(x) = \gamma_1(x),\qquad P^{\text{new}}(x,x') = \frac{\sum_{k=2}^n\xi_k(x,x')}{\sum_{k=2}^n\gamma_{k-1}(x)}$$</div>
+  <div class="eq">$$\beta_{1,x}^{\text{new}} = \frac{\sum_k\gamma_k(x)Y_k}{\sum_k\gamma_k(x)},\qquad \beta_{2,x}^{\text{new}} = \frac{\sum_k\gamma_k(x)\big(Y_k-\beta_{1,x}^{\text{new}}\big)^2}{\sum_k\gamma_k(x)}.$$</div>
+  <p class="reading">Ce sont les formules de la chaîne de Markov et de la moyenne/variance empiriques, mais avec des <b>comptages espérés</b> : chaque observation compte pour l'état $x$ avec le poids $\gamma_k(x)$.</p></dd>
+  <dt>Analogie</dt><dd><p>Trier des copies dont on n'est pas sûr de l'auteur. Plutôt que d'attribuer chaque copie à un seul élève, on la partage selon la probabilité qu'elle soit de lui, on recalcule la « moyenne de chaque élève », puis on refait l'attribution avec ces nouvelles moyennes.</p></dd>
+  <dt>Limites</dt><dd><p>EM fait croître la vraisemblance à chaque itération mais peut converger vers un <b>maximum local</b> : le cours recommande plusieurs initialisations. Les étiquettes des états peuvent aussi s'échanger d'une initialisation à l'autre.</p></dd>
+</dl>
+<div class="tool" id="tool-em">
+  <h4>Une itération d'EM, puis les suivantes</h4>
+  <p class="assume">Chaque clic fait une étape E (forward-backward) et une étape M. La log-vraisemblance est recalculée par forward ; elle ne doit jamais diminuer.</p>
+  <div class="stepper"><button class="act" type="button" id="em-next">Itération suivante</button><button class="ghost" type="button" id="em-reset">Revenir aux paramètres initiaux</button><output id="em-pos" aria-live="polite"></output></div>
+  <div class="out" id="em-out" aria-live="polite"></div>
+</div>
+
+<h3 id="hmm-viterbi">L'algorithme de Viterbi (section 2.6.3)</h3>
+<dl class="layers">
+  <dt>Pourquoi</dt><dd><p>On veut <b>un</b> scénario caché complet, le plus probable : $(x_1^*,\dots,x_n^*) = \arg\max \mathbb P(X_1=x_1,\dots,X_n=x_n\mid Y)$. C'est utile pour segmenter (phases rapides et lentes, régimes de marché, gènes).</p></dd>
+  <dt>Proposition 12</dt><dd><div class="eq">$$V_1(x) = \mu(x)g(Y_1\mid x),\qquad V_k(x) = \max_{x'\in E}\big[V_{k-1}(x')P(x',x)\big]\,g(Y_k\mid x),$$</div>
+  <p>puis $x_n^* = \arg\max_x V_n(x)$ et, en remontant, $x_{k-1}^* = \arg\max_{x'}V_{k-1}(x')P(x',x_k^*)$.</p>
+  <p class="reading">C'est la récurrence forward où la somme est remplacée par un maximum, et où l'on mémorise qui a gagné.</p></dd>
+  <dt>Analogie</dt><dd><p>Un GPS qui calcule le meilleur itinéraire : à chaque carrefour il ne garde que le meilleur chemin pour y arriver, puis à l'arrivée il remonte les flèches.</p></dd>
+</dl>
+<figure>
+<svg id="vit-svg" viewBox="0 0 640 230" role="img" aria-labelledby="vt-t vt-d"><title id="vt-t">Treillis de Viterbi</title><desc id="vt-d">Le temps en abscisse, les deux états en ordonnée. Les transitions candidates sont en trait fin, le prédécesseur retenu en trait plein, le chemin final reconstitué en couleur.</desc></svg>
+<figcaption>Traits fins : toutes les transitions candidates. Traits épais : prédécesseur retenu pour chaque nœud. En couleur : le chemin obtenu en remontant depuis le meilleur état final.</figcaption>
+</figure>
+<div class="tablewrap" id="vit-table"></div>
+
+<h3 id="hmm-cmp">Lissage ou Viterbi : la question 4 du TP 2</h3>
+<p>Sur notre exemple, l'état individuellement le plus probable à chaque instant ($\arg\max_x\gamma_k(x)$) et le chemin de Viterbi <b>ne coïncident pas</b> :</p>
+<div class="tablewrap" id="cmp-table"></div>
+<dl class="layers">
+  <dt>Pourquoi ce n'est pas étonnant</dt><dd><p>Le lissage répond à $n$ questions séparées (« où étais-je au temps $k$ ? ») ; Viterbi répond à une seule question globale (« quel scénario entier ? »). Le meilleur scénario entier n'est pas forcément composé des meilleures réponses séparées : ici, l'état 2 est le plus probable aux instants 1, 3 et 4, mais aucun scénario précis qui alterne 2-1-2-2-1 n'est aussi probable que de rester en 1, à cause de l'inertie de la chaîne ($P(x,x) = 0{,}7$).</p></dd>
+  <dt>Analogie</dt><dd><p>Pour chaque question d'un QCM, la réponse la plus choisie par une classe ; la copie la plus fréquente de la classe entière peut être différente.</p></dd>
+</dl>
+<div class="tablewrap"><table class="cmp"><thead><tr><th>Méthode</th><th>Opération</th><th>Paramètres</th><th>Résultat</th><th>Usage</th></tr></thead><tbody>
+<tr><td>Forward</td><td>somme sur les prédécesseurs</td><td>fixés</td><td>$L_n$ et $p_k$</td><td>vraisemblance</td></tr>
+<tr><td>Forward-backward</td><td>sommes passé et futur</td><td>fixés</td><td>$\gamma_k$, $\xi_k$</td><td>où était-on, avec quelle incertitude</td></tr>
+<tr><td>EM / Baum-Welch</td><td>espérance puis maximisation</td><td>mis à jour</td><td>nouveaux $\mu, P, \beta$</td><td>estimer le modèle</td></tr>
+<tr><td>Viterbi</td><td>maximum sur les prédécesseurs</td><td>fixés</td><td>un chemin complet</td><td>segmenter, décoder</td></tr>
+</tbody></table></div>
+<p class="warn"><span class="label">Erreur fréquente</span>Dire que Viterbi « estime le modèle » : il décode une séquence pour des paramètres déjà fixés. Et EM ne remplace pas les états cachés par un chemin décodé : il les pondère par $\gamma$ et $\xi$.</p>
+<p class="note">Note d'implémentation (ajout, hors cours) : pour de longues séquences, les $p_k$ deviennent minuscules ; on normalise à chaque pas ou l'on travaille en logarithmes. Cela change la représentation des nombres, pas la cible statistique. La page utilise des séquences courtes, donc les formules exactes du cours.</p>
+<p class="src">Polycopié, sections 2.6 à 2.8 (p. 37 à 44), exercice 11 ; TP 2, exercice 1.</p>
+</section>
+<section id="exercices">
+<h2>Atelier d'exercices</h2>
+<p>Chaque exercice part d'une question du cours, des TP ou de l'examen 2024. Lisez l'énoncé, essayez, ouvrez l'indice seulement si vous bloquez, puis comparez au corrigé. Les cases « Vérifier » donnent un retour immédiat sur les résultats numériques.</p>
+
+<article class="exercise" id="ex1">
+<h3>1. Une marche aléatoire n'est jamais récurrente positive</h3>
+<p class="meta">Niveau : intermédiaire · Source : exercice 6 du cours · Objectif : relier EMV d'une chaîne et EMV d'un échantillon i.i.d.</p>
+<p>$X_n = x + \sum_{i=1}^n Y_i$ avec $Y_i$ i.i.d., $\mathbb P(Y_i=1) = p = 1-\mathbb P(Y_i=-1)$, $0<p<1$. On observe $X_1,\dots,X_n$.</p>
+<ol class="tasks"><li>Justifier l'irréductibilité. La chaîne peut-elle être récurrente positive ?</li><li>Proposer un estimateur de $p$ à partir des accroissements et donner sa loi asymptotique.</li><li>Montrer que c'est l'EMV de la chaîne.</li></ol>
+<details><summary>Indice</summary><p>Une probabilité invariante devrait vérifier $\pi(k) = p\,\pi(k-1) + (1-p)\pi(k+1)$ sur tout $\mathbb Z$. Pour la question 3, écrivez la vraisemblance conditionnelle au premier état : seules deux transitions ont une probabilité non nulle.</p></details>
+<details><summary>Corrigé</summary>
+<p><b>1.</b> De $k$ on atteint $k+1$ (probabilité $p>0$) et $k-1$ (probabilité $1-p>0$) : tout état communique avec tout autre. Une solution de $\pi P=\pi$ est soit constante, soit de la forme $a + b\,(p/(1-p))^k$ : aucune n'est sommable sur $\mathbb Z$. Il n'y a donc pas de probabilité invariante : la chaîne n'est pas récurrente positive (récurrente nulle si $p=1/2$, transiente sinon).</p>
+<p><b>2.</b> Les $Y_j = X_{j+1}-X_j$ ($j=1,\dots,n-1$) sont i.i.d. de Bernoulli « décalée ». On pose $\hat p = \frac{1}{n-1}\sum_{j}\mathbf 1\{Y_j = 1\} = \frac12\Big(1+\frac{X_n-X_1}{n-1}\Big)$. Loi des grands nombres : $\hat p\to p$ p.s. ; TLC : $\sqrt{n-1}(\hat p - p)\to\mathcal N\big(0, p(1-p)\big)$.</p>
+<p><b>3.</b> $L(p) = \prod_{j} P(X_j,X_{j+1}) = p^{U}(1-p)^{D}$ où $U$ et $D$ comptent les montées et descentes, $U+D = n-1$. Alors $\ell'(p) = U/p - D/(1-p) = 0$ donne $\hat p = U/(n-1)$ : le même estimateur. Ici les lignes de $P$ partagent toutes le même paramètre, d'où l'on additionne les comptages de toutes les lignes.</p>
+<p class="warn"><span class="label">Piège</span>Appliquer la Proposition 8 : elle suppose $E$ fini et une loi invariante, ce qui n'est pas le cas ici. C'est le TLC i.i.d. qui s'applique.</p>
+</details>
+<button class="ghost done" type="button" data-ex="ex1">Marquer comme compris</button>
+</article>
+
+<article class="exercise" id="ex2">
+<h3>2. Chaîne à deux états : estimateur, variance, intervalle</h3>
+<p class="meta">Niveau : fondamental · Source : exercice 7 du cours, TP 1 exercice 1</p>
+<p>$P = \begin{pmatrix}1-p&p\\q&1-q\end{pmatrix}$, $0<p,q<1$, observée sur $X_1,\dots,X_n$.</p>
+<ol class="tasks"><li>Donner $(\hat p,\hat q)$.</li><li>Donner la loi asymptotique de $\sqrt n(\hat p - p,\ \hat q-q)$ en explicitant $\pi$.</li><li>En déduire $\hat\sigma$ tel que $\sqrt n(\hat p - p)/\hat\sigma\to\mathcal N(0,1)$ et un intervalle à 95 %.</li><li>Application : $N_n(0,1) = 4$, $N_n(0+) = 10$, $n = 21$.</li></ol>
+<details><summary>Indice</summary><p>La loi invariante d'une chaîne à deux états se trouve avec une seule équation d'équilibre : flux de 0 vers 1 égal au flux de 1 vers 0.</p></details>
+<details><summary>Corrigé</summary>
+<p><b>1.</b> $\hat p = N_n(0,1)/N_n(0+)$, $\hat q = N_n(1,0)/N_n(1+)$ (lignes maximisées séparément).</p>
+<p><b>2.</b> Équilibre $\pi(0)p = \pi(1)q$ et $\pi(0)+\pi(1) = 1$ donnent $\pi = \big(\frac q{p+q},\frac p{p+q}\big)$. Par la Proposition 8, les deux composantes sont asymptotiquement indépendantes (lignes différentes) et</p>
+<div class="eq">$$\sqrt n\begin{pmatrix}\hat p-p\\ \hat q-q\end{pmatrix}\to\mathcal N\left(0,\ \begin{pmatrix}\frac{p(1-p)(p+q)}{q}&0\\0&\frac{q(1-q)(p+q)}{p}\end{pmatrix}\right).$$</div>
+<p><b>3.</b> $\hat\sigma^2 = \hat p(1-\hat p)/\hat\pi(0)$ avec $\hat\pi(0) = N_n(0+)/n$ (ou $\hat q/(\hat p+\hat q)$). Slutsky donne la convergence vers $\mathcal N(0,1)$. Intervalle : $\hat p\pm1{,}96\,\hat\sigma/\sqrt n = \hat p \pm 1{,}96\sqrt{\hat p(1-\hat p)/N_n(0+)}$.</p>
+<p><b>4.</b> $\hat p = 0{,}4$ et $0{,}4\pm1{,}96\sqrt{0{,}024} = [0{,}096 ;\ 0{,}704]$.</p>
+</details>
+<div class="check"><label for="c2">Borne supérieure de l'intervalle (3 décimales) :</label><input id="c2" class="num" type="text" inputmode="decimal"><button class="ghost" type="button" data-check="c2" data-ans="0.704" data-tol="0.002">Vérifier</button><span class="fb" id="c2-fb" aria-live="polite"></span></div>
+<button class="ghost done" type="button" data-ex="ex2">Marquer comme compris</button>
+</article>
+
+<article class="exercise" id="ex3">
+<h3>3. Deux chaînes ont-elles la même transition ?</h3>
+<p class="meta">Niveau : examen · Source : Examen 2024, exercice 1</p>
+<p>Deux chaînes indépendantes $(X_{1,t})$ et $(X_{2,t})$ sur le même $E$ fini, de transitions $P_1$, $P_2$ à entrées strictement positives. Pour un couple $(x_0,y_0)$ fixé, on veut tester $H_0 : p_1 = p_2$ avec $p_i = P_i(x_0,y_0)$, à partir de deux trajectoires de longueur $n$.</p>
+<ol class="tasks"><li>Rappeler $\hat p_i$. Pourquoi est-il consistant ?</li><li>Donner $\sigma_i^2$ telle que $\sqrt n(\hat p_i - p_i)\to\mathcal N(0,\sigma_i^2)$ et un estimateur.</li><li>Loi asymptotique de $S_n = \sqrt n(\hat p_1-\hat p_2)$ sous $H_0$ ; test de niveau 5 %.</li><li>Application : $n=400$, $N_1(x_0,y_0) = 60$, $N_1(x_0+) = 150$, $N_2(x_0,y_0) = 45$, $N_2(x_0+) = 160$. Conclure.</li></ol>
+<details><summary>Indice</summary><p>Les deux estimateurs sont indépendants (chaînes indépendantes) : la variance d'une différence est la somme des variances. Sous $H_0$, les deux $p_i$ sont égaux mais les $\pi_i(x_0)$ ne le sont pas forcément.</p></details>
+<details><summary>Corrigé</summary>
+<p><b>1.</b> $\hat p_i = N_{i,n}(x_0,y_0)/N_{i,n}(x_0+)$. Entrées strictement positives donc chaîne irréductible sur $E$ fini, donc récurrente positive : le théorème ergodique donne $N_{i,n}(x_0,y_0)/n\to\pi_i(x_0)p_i$ et $N_{i,n}(x_0+)/n\to\pi_i(x_0)>0$, d'où $\hat p_i\to p_i$ p.s.</p>
+<p><b>2.</b> Proposition 8 : $\sigma_i^2 = p_i(1-p_i)/\pi_i(x_0)$, estimée par $\hat\sigma_i^2 = \hat p_i(1-\hat p_i)\,n/N_{i,n}(x_0+)$.</p>
+<p><b>3.</b> Sous $H_0$, $S_n = \sqrt n(\hat p_1 - p_1) - \sqrt n(\hat p_2-p_2)\to\mathcal N(0,\sigma_1^2+\sigma_2^2)$ par indépendance. Avec Slutsky, $Z_n = S_n/\sqrt{\hat\sigma_1^2+\hat\sigma_2^2}\to\mathcal N(0,1)$ : on rejette $H_0$ si $|Z_n|>1{,}96$. Test asymptotiquement de niveau 5 %, convergent (sous $H_1$, $|S_n|\to\infty$).</p>
+<p><b>4.</b> $\hat p_1 = 0{,}4$, $\hat p_2 = 0{,}28125$. $\hat\sigma_1^2 = 0{,}24\times400/150 = 0{,}64$ ; $\hat\sigma_2^2 = 0{,}2021\times400/160 = 0{,}5054$. $S_n = 20\times0{,}11875 = 2{,}375$ ; $Z_n = 2{,}375/\sqrt{1{,}1454} = 2{,}22 > 1{,}96$ : on rejette $H_0$ au niveau 5 %.</p>
+</details>
+<div class="check"><label for="c3">Valeur de $Z_n$ (2 décimales) :</label><input id="c3" class="num" type="text" inputmode="decimal"><button class="ghost" type="button" data-check="c3" data-ans="2.22" data-tol="0.02">Vérifier</button><span class="fb" id="c3-fb" aria-live="polite"></span></div>
+<button class="ghost done" type="button" data-ex="ex3">Marquer comme compris</button>
+</article>
+
+<article class="exercise" id="ex4">
+<h3>4. Test d'adéquation : combien de degrés de liberté ?</h3>
+<p class="meta">Niveau : fondamental · Source : Théorème 3</p>
+<p>Sur $E = \{a,b,c\}$, on teste $H_0 : P = P_0$ avec $P_0 = \begin{pmatrix}0{,}5&0{,}5&0\\0{,}2&0{,}6&0{,}2\\0&0{,}5&0{,}5\end{pmatrix}$.</p>
+<ol class="tasks"><li>Combien de degrés de liberté a la loi limite de $T_n$ ?</li><li>Expliquer pourquoi les cases nulles de $P_0$ sont exclues de la somme.</li><li>Que vaut le seuil à 5 % ?</li></ol>
+<details><summary>Indice</summary><p>$k$ compte les cases strictement positives ; chaque ligne perd un degré à cause de la contrainte « somme des comptages de la ligne = $N_n(x+)$ ».</p></details>
+<details><summary>Corrigé</summary>
+<p><b>1.</b> $k = 2+3+2 = 7$ cases positives, $|E| = 3$, donc $7-3 = 4$ degrés de liberté.</p>
+<p><b>2.</b> Sous $H_0$ une transition interdite n'est jamais observée et le dénominateur $P_0(x,y)N_n(x+)$ serait nul. Si une telle transition est observée, $H_0$ est réfutée directement, sans test.</p>
+<p><b>3.</b> $\chi^2_4(0{,}95)\approx9{,}49$.</p>
+</details>
+<div class="check"><label for="c4">Degrés de liberté :</label><input id="c4" class="num" type="text" inputmode="numeric"><button class="ghost" type="button" data-check="c4" data-ans="4" data-tol="0">Vérifier</button><span class="fb" id="c4-fb" aria-live="polite"></span></div>
+<button class="ghost done" type="button" data-ex="ex4">Marquer comme compris</button>
+</article>
+
+<article class="exercise" id="ex5">
+<h3>5. Le test d'indépendance est un rapport de vraisemblance</h3>
+<p class="meta">Niveau : avancé · Source : TP 1, exercice 3</p>
+<p>Sous $H_0$ (indépendance des coordonnées), toutes les lignes de $P$ sont égales à une même loi $\rho$ sur $E$.</p>
+<ol class="tasks"><li>Écrire la vraisemblance conditionnelle sous $H_0$ et montrer que $\hat\rho(y) = \frac1{n-1}\sum_{i=1}^{n-1}\mathbf 1\{X_{i+1}=y\}$.</li><li>Montrer que $W_n = 2\sum_{x,y}N_n(x,y)\ln\frac{\hat P_n(x,y)}{\hat P_{n,0}(x,y)}$ vaut $2\big(\ell(\hat P_n) - \ell(\hat P_{n,0})\big)$.</li><li>Justifier le nombre de degrés de liberté $(|E|-1)^2$.</li></ol>
+<details><summary>Indice</summary><p>Sous $H_0$, $\ell(\rho) = \sum_y\big(\sum_x N_n(x,y)\big)\ln\rho(y)$ : c'est un problème multinomial à une seule ligne.</p></details>
+<details><summary>Corrigé</summary>
+<p><b>1.</b> $\ell(\rho) = \sum_{x,y}N_n(x,y)\ln\rho(y) = \sum_y M(y)\ln\rho(y)$ avec $M(y) = \sum_xN_n(x,y)$ le nombre d'arrivées en $y$. Le Lemme 2 donne $\hat\rho(y) = M(y)/\sum_yM(y) = M(y)/(n-1)$.</p>
+<p><b>2.</b> $\ell(\hat P_n) - \ell(\hat P_{n,0}) = \sum_{x,y}N_n(x,y)\big(\ln\hat P_n(x,y)-\ln\hat P_{n,0}(x,y)\big)$ : c'est exactement $W_n/2$. Le modèle complet contient $H_0$, donc $W_n\ge0$.</p>
+<p><b>3.</b> Modèle complet : $|E|(|E|-1)$ paramètres libres (chaque ligne perd 1). Sous $H_0$ : $|E|-1$. Différence : $|E|(|E|-1)-(|E|-1) = (|E|-1)^2$, ce que donne le théorème de Wilks.</p>
+</details>
+<button class="ghost done" type="button" data-ex="ex5">Marquer comme compris</button>
+</article>
+
+<article class="exercise" id="ex6">
+<h3>6. Combien de pas avant l'absorption ?</h3>
+<p class="meta">Niveau : intermédiaire · Source : Proposition 7, TP 1 exercice 2</p>
+<p>Chaîne sur $\{0,1,2,3\}$, $0$ et $3$ absorbants, $P(1,2) = P(2,3) = p$, $P(1,0) = P(2,1) = 1-p$.</p>
+<ol class="tasks"><li>Écrire $T$ (transitions entre états non absorbants) et $F = (I-T)^{-1}$.</li><li>En déduire le nombre moyen de pas avant absorption depuis 1.</li><li>Application $p = 0{,}4$.</li></ol>
+<details><summary>Indice</summary><p>$T = \begin{pmatrix}0&p\\1-p&0\end{pmatrix}$ ; une matrice $2\times2$ s'inverse avec le déterminant.</p></details>
+<details><summary>Corrigé</summary>
+<p><b>1.</b> $I-T = \begin{pmatrix}1&-p\\-(1-p)&1\end{pmatrix}$, de déterminant $1-p(1-p)$, donc $F = \frac{1}{1-p+p^2}\begin{pmatrix}1&p\\1-p&1\end{pmatrix}$.</p>
+<p><b>2.</b> Somme de la première ligne : $\mathbb E_1(\text{pas}) = \frac{1+p}{1-p+p^2}$.</p>
+<p><b>3.</b> $1{,}4/0{,}76 = 1{,}842$ pas. Interprétation : $F(1,1) = 1{,}316$ passages moyens en 1 (le passage initial compris) et $F(1,2) = 0{,}526$ en 2.</p>
+</details>
+<div class="check"><label for="c6">Nombre moyen de pas (3 décimales) :</label><input id="c6" class="num" type="text" inputmode="decimal"><button class="ghost" type="button" data-check="c6" data-ans="1.842" data-tol="0.002">Vérifier</button><span class="fb" id="c6-fb" aria-live="polite"></span></div>
+<button class="ghost done" type="button" data-ex="ex6">Marquer comme compris</button>
+</article>
+
+<article class="exercise" id="ex7">
+<h3>7. Estimer une intensité à partir de comptages</h3>
+<p class="meta">Niveau : examen · Source : Examen 2024, exercice 3</p>
+<p>On compte des contaminations, modélisées par un Poisson homogène d'intensité $\lambda$, mais on ne connaît que les nombres de cas $X_i$ entre $t_{i-1}$ et $t_i$, $0 = t_0<t_1<\dots<t_n$.</p>
+<ol class="tasks"><li>Exprimer $X_i$ avec $N_{t_i}$ et $N_{t_{i-1}}$ ; donner sa loi.</li><li>Les $X_i$ sont-elles indépendantes ? Identiquement distribuées ?</li><li>Donner l'EMV de $\lambda$.</li></ol>
+<details><summary>Indice</summary><p>Accroissements indépendants et stationnaires. Pour l'EMV, regroupez tous les facteurs en $\lambda$.</p></details>
+<details><summary>Corrigé</summary>
+<p><b>1.</b> $X_i = N_{t_i}-N_{t_{i-1}}\sim\mathcal P\big(\lambda(t_i-t_{i-1})\big)$.</p>
+<p><b>2.</b> Indépendantes (intervalles disjoints, accroissements indépendants). Identiquement distribuées si et seulement si les intervalles ont tous la même longueur.</p>
+<p><b>3.</b> $L(\lambda) = \prod_i e^{-\lambda(t_i-t_{i-1})}\frac{(\lambda(t_i-t_{i-1}))^{X_i}}{X_i!} \propto e^{-\lambda t_n}\lambda^{\sum_iX_i}$, donc $\hat\lambda = \frac{\sum_i X_i}{t_n} = \frac{N_{t_n}}{t_n}$. Les durées des intervalles disparaissent : seule la durée totale compte.</p>
+</details>
+<button class="ghost done" type="button" data-ex="ex7">Marquer comme compris</button>
+</article>
+
+<article class="exercise" id="ex8">
+<h3>8. S'arrêter au n-ième événement</h3>
+<p class="meta">Niveau : intermédiaire · Source : section 3.1.1, schéma 2</p>
+<p>On observe un processus de Poisson jusqu'au 25ᵉ événement, qui arrive à $T_{25} = 12{,}5$ heures.</p>
+<ol class="tasks"><li>Écrire la densité de $(T_1,\dots,T_n)$ et l'EMV.</li><li>Construire un intervalle de confiance asymptotique à 95 % pour $\lambda$.</li><li>Pourquoi ne peut-on pas utiliser $\sqrt{t^2/N_t}$ comme dans le schéma 1 ?</li></ol>
+<details><summary>Indice</summary><p>$T_n$ est une somme de $n$ exponentielles i.i.d. de paramètre $\lambda$ : moyenne $n/\lambda$, variance $n/\lambda^2$.</p></details>
+<details><summary>Corrigé</summary>
+<p><b>1.</b> Les délais $T_{i}-T_{i-1}$ sont i.i.d. $\mathcal E(\lambda)$ : densité $\prod\lambda e^{-\lambda(t_i-t_{i-1})} = \lambda^n e^{-\lambda t_n}$ sur $\{0<t_1<\dots<t_n\}$. $\hat\lambda = n/T_n = 2$ par heure.</p>
+<p><b>2.</b> TLC : $\sqrt n(\lambda T_n/n - 1)\to\mathcal N(0,1)$. L'événement $|\sqrt n(\lambda/\hat\lambda-1)|\le1{,}96$ donne $\lambda\in\big[\hat\lambda(1-1{,}96/\sqrt n),\ \hat\lambda(1+1{,}96/\sqrt n)\big] = [1{,}216 ;\ 2{,}784]$.</p>
+<p><b>3.</b> Ici $n$ est fixé et c'est le temps $T_n$ qui est aléatoire : l'asymptotique porte sur $n\to\infty$, pas sur $t\to\infty$. Les deux intervalles sont proches numériquement, mais leurs justifications diffèrent.</p>
+</details>
+<div class="check"><label for="c8">Borne inférieure (3 décimales) :</label><input id="c8" class="num" type="text" inputmode="decimal"><button class="ghost" type="button" data-check="c8" data-ans="1.216" data-tol="0.002">Vérifier</button><span class="fb" id="c8-fb" aria-live="polite"></span></div>
+<button class="ghost done" type="button" data-ex="ex8">Marquer comme compris</button>
+</article>
+
+<article class="exercise" id="ex9">
+<h3>9. Retrouver les équations du processus de Weibull</h3>
+<p class="meta">Niveau : avancé · Source : section 3.2.2, Proposition 18</p>
+<ol class="tasks"><li>À partir de $\ell(\alpha,\beta) = n(\ln\beta-\beta\ln\alpha)+(\beta-1)\sum\ln t_i-(t/\alpha)^\beta$, écrire les deux équations du score.</li><li>En déduire $1/\hat\beta$ et $\ln\hat\alpha$.</li><li>Montrer que $\Lambda_{\hat\alpha,\hat\beta}(t) = n$ et interpréter.</li><li>Avec $n=8$ et $\hat\beta = 1{,}386$, donner l'intervalle à 95 % pour $\beta$ ($\chi^2_{0,025}(16) = 6{,}908$, $\chi^2_{0,975}(16) = 28{,}845$).</li></ol>
+<details><summary>Indice</summary><p>Dérivez d'abord en $\alpha$ : on obtient $(t/\alpha)^\beta = n$. Remplacez dans l'équation en $\beta$, en utilisant $\frac{d}{d\beta}(t/\alpha)^\beta = (t/\alpha)^\beta\ln(t/\alpha)$.</p></details>
+<details><summary>Corrigé</summary>
+<p><b>1.</b> $\partial_\alpha\ell = -\frac{n\beta}{\alpha} + \frac{\beta}{\alpha}\big(\frac t\alpha\big)^\beta = 0$ et $\partial_\beta\ell = \frac n\beta - n\ln\alpha + \sum\ln t_i - \big(\frac t\alpha\big)^\beta\ln\frac t\alpha = 0$.</p>
+<p><b>2.</b> La première donne $(t/\alpha)^\beta = n$. Dans la seconde : $\frac n\beta - n\ln\alpha + \sum\ln t_i - n(\ln t-\ln\alpha) = 0$, soit $\frac1\beta = \ln t - \frac1n\sum\ln t_i$. Puis $\beta(\ln t - \ln\alpha) = \ln n$ donne $\ln\alpha = \ln t - \frac{\ln n}{\beta}$.</p>
+<p><b>3.</b> C'est la première équation : le nombre moyen d'événements prévu sur $[0,t]$ par le modèle ajusté égale le nombre observé.</p>
+<p><b>4.</b> $\frac{1{,}386}{16}\times[6{,}908 ;\ 28{,}845] = [0{,}599 ;\ 2{,}499]$. L'intervalle contient 1 : pas de preuve d'usure avec 8 pannes.</p>
+</details>
+<button class="ghost done" type="button" data-ex="ex9">Marquer comme compris</button>
+</article>
+
+<article class="exercise" id="ex10">
+<h3>10. Naissance et mort : du générateur à la simulation</h3>
+<p class="meta">Niveau : examen · Source : Examen 2024, exercice 2</p>
+<p>Processus de sauts sur $E=\{0,\dots,N\}$ avec $A(0,1) = p$, $A(n,n+1) = p$ et $A(n,n-1) = q$ pour $1\le n\le N-1$, $A(N,N-1) = q$, et $A(n,m) = 0$ si $|n-m|\ge2$ ; $p,q>0$.</p>
+<ol class="tasks"><li>Compléter la diagonale.</li><li>Donner la transition $Q$ de la chaîne immergée.</li><li>Pourquoi existe-t-il une unique probabilité invariante ? La calculer.</li><li>Donner l'EMV de $(p,q)$ à partir d'une trajectoire sur $[0,T]$.</li><li>Écrire un algorithme de simulation d'une trajectoire à $n$ sauts.</li></ol>
+<details><summary>Indice</summary><p>Pour la loi invariante, cherchez $\pi$ qui équilibre les flux entre $n$ et $n+1$ : $\pi(n)\,p = \pi(n+1)\,q$.</p></details>
+<details><summary>Corrigé</summary>
+<p><b>1.</b> Lignes de somme nulle : $A(0,0) = -p$, $A(n,n) = -(p+q)$ pour $1\le n\le N-1$, $A(N,N) = -q$.</p>
+<p><b>2.</b> $Q(0,1) = 1$, $Q(N,N-1) = 1$, et pour $1\le n\le N-1$ : $Q(n,n+1) = \frac p{p+q}$, $Q(n,n-1) = \frac q{p+q}$.</p>
+<p><b>3.</b> $E$ est fini et la chaîne immergée est irréductible (on passe d'un voisin à l'autre avec probabilité positive) : le processus est irréductible donc récurrent positif, avec une unique probabilité invariante (Théorème 8 et remarque 3 p. 74). L'équation $\pi A = 0$ est satisfaite par $\pi(n)p = \pi(n+1)q$, d'où $\pi(n) = \frac{r^n}{\sum_{k=0}^N r^k}$ avec $r = p/q$.</p>
+<p><b>4.</b> Log-vraisemblance : $\ln p\sum_{n<N}N_T(n,n+1) - p\sum_{n<N}R_T(n) + \ln q\sum_{n\ge1}N_T(n,n-1) - q\sum_{n\ge1}R_T(n)$, d'où</p>
+<div class="eq">$$\hat p = \frac{\sum_{n=0}^{N-1}N_T(n,n+1)}{\sum_{n=0}^{N-1}R_T(n)},\qquad \hat q = \frac{\sum_{n=1}^NN_T(n,n-1)}{\sum_{n=1}^NR_T(n)}.$$</div>
+<p><b>5.</b> Initialiser $x$ et $t=0$. Pour $k = 1..n$ : tirer $S\sim\mathcal E(a(x))$ avec $a(0)=p$, $a(N) = q$, sinon $p+q$ ; faire $t\leftarrow t+S$ ; tirer $y$ selon $Q(x,\cdot)$ (par exemple $U$ uniforme et $y = x+1$ si $U<p/(p+q)$) ; enregistrer $(t,y)$ ; $x\leftarrow y$. Le calculateur de la section « processus de sauts » applique exactement cet algorithme.</p>
+</details>
+<button class="ghost done" type="button" data-ex="ex10">Marquer comme compris</button>
+</article>
+
+<article class="exercise" id="ex11">
+<h3>11. Un cycle à trois états</h3>
+<p class="meta">Niveau : intermédiaire · Source : exercices 15 et 16 du cours</p>
+<p>(a) $A = \begin{pmatrix}-\lambda&\lambda&0\\0&-\lambda&\lambda\\ \lambda&0&-\lambda\end{pmatrix}$. (b) $A = \begin{pmatrix}-\lambda&\lambda&0\\0&-\mu&\mu\\ \nu&0&-\nu\end{pmatrix}$ sur $E = \{0,1,2\}$.</p>
+<ol class="tasks"><li>(a) Donner l'EMV de $\lambda$.</li><li>(b) Chaîne immergée, dynamique, loi invariante.</li><li>(b) Montrer que $\mathbb E_x(R_x) = \frac1\lambda+\frac1\mu+\frac1\nu$ et vérifier $\pi(x) = \frac{1}{a(x)\mathbb E_x(R_x)}$.</li></ol>
+<details><summary>Indice</summary><p>(a) Tous les taux non nuls valent $\lambda$ : regroupez. Le temps total passé dans les trois états vaut $t$.</p></details>
+<details><summary>Corrigé</summary>
+<p><b>1.</b> $\ell(\lambda) = \sum_{x\ne y}N_t(x,y)\ln\lambda - \lambda\sum_xR_t(x) = N_t\ln\lambda-\lambda t$ ($N_t$ = nombre total de sauts). Donc $\hat\lambda = N_t/t$ : on retrouve un processus de Poisson, puisque les sauts arrivent toujours au même taux.</p>
+<p><b>2.</b> $Q$ envoie $0\to1\to2\to0$ avec probabilité 1 : le processus tourne en rond, en restant un temps $\mathcal E(\lambda)$ en 0, $\mathcal E(\mu)$ en 1, $\mathcal E(\nu)$ en 2. $\pi A = 0$ donne $\lambda\pi(0) = \mu\pi(1) = \nu\pi(2)$, donc $\pi\propto(1/\lambda,\ 1/\mu,\ 1/\nu)$.</p>
+<p><b>3.</b> Partant de $x$, revenir en $x$ demande un tour complet : $\mathbb E_x(R_x) = \frac1\lambda+\frac1\mu+\frac1\nu =: S$ pour tout $x$. Alors $\frac{1}{a(0)S} = \frac{1/\lambda}{S} = \pi(0)$, et de même pour 1 et 2. Interprétation : la part de temps en $x$ est la durée moyenne d'un séjour en $x$ divisée par la durée d'un cycle.</p>
+</details>
+<button class="ghost done" type="button" data-ex="ex11">Marquer comme compris</button>
+</article>
+
+<article class="exercise" id="ex12">
+<h3>12. Établir les mises à jour d'EM pour un HMM gaussien</h3>
+<p class="meta">Niveau : examen · Source : exercice 11 du cours, TP 2 exercice 1 question 1</p>
+<p>Émissions $\mathcal N(\beta_{1,x},\beta_{2,x})$ (variance $\beta_{2,x}$). Partir de $Q_n(\theta\mid\theta_j)$ et dériver les mises à jour de $\mu$, $P$, $\beta_{1,x}$, $\beta_{2,x}$.</p>
+<details><summary>Indice</summary><p>Les trois blocs de $Q_n$ ne partagent aucun paramètre. Pour $\mu$ et chaque ligne de $P$, c'est le Lemme 2 avec des poids ; pour la gaussienne, dérivez $-\frac12\sum_k\gamma_k(x)\big[\ln\beta_{2,x} + (Y_k-\beta_{1,x})^2/\beta_{2,x}\big]$.</p></details>
+<details><summary>Corrigé</summary>
+<p><b>Bloc initial.</b> $\sum_x\gamma_1(x)\ln\mu(x)$ avec $\sum_x\mu(x) = 1$ : maximum en $\mu(x) = \gamma_1(x)$ (Lemme 2).</p>
+<p><b>Bloc transitions.</b> $\sum_x\sum_{x'}\big(\sum_{k=2}^n\xi_k(x,x')\big)\ln P(x,x')$ : ligne par ligne, Lemme 2, $P(x,x') = \frac{\sum_k\xi_k(x,x')}{\sum_{x''}\sum_k\xi_k(x,x'')} = \frac{\sum_{k=2}^n\xi_k(x,x')}{\sum_{k=2}^n\gamma_{k-1}(x)}$, car $\sum_{x''}\xi_k(x,x'') = \gamma_{k-1}(x)$.</p>
+<p><b>Bloc émissions.</b> Pour $x$ fixé : $\partial_{\beta_{1,x}}$ donne $\sum_k\gamma_k(x)(Y_k-\beta_{1,x}) = 0$, d'où la moyenne pondérée. $\partial_{\beta_{2,x}}$ donne $-\frac{\sum_k\gamma_k(x)}{2\beta_{2,x}} + \frac{\sum_k\gamma_k(x)(Y_k-\beta_{1,x})^2}{2\beta_{2,x}^2} = 0$, d'où la variance pondérée (avec la nouvelle moyenne).</p>
+<p><b>Lecture :</b> ce sont les EMV d'une chaîne observée et d'un échantillon gaussien, dans lesquels chaque comptage est remplacé par son espérance conditionnelle.</p>
+</details>
+<button class="ghost done" type="button" data-ex="ex12">Marquer comme compris</button>
+</article>
+
+<article class="exercise" id="ex13">
+<h3>13. Viterbi contre lissage, avec les chiffres</h3>
+<p class="meta">Niveau : avancé · Source : TP 2, exercice 1, questions 2 et 4</p>
+<p>Avec l'exemple du chapitre HMM ($Y = (6{,}2;\,5{,}7;\,6{,}3;\,6{,}1;\,5{,}9)$), le lissage donne $\gamma_\cdot(2) = (0{,}580;\ 0{,}242;\ 0{,}695;\ 0{,}569;\ 0{,}354)$.</p>
+<ol class="tasks"><li>Quelle suite d'états donne le maximum des probabilités de lissage ?</li><li>Le chemin de Viterbi est 1-1-1-1-1. Expliquer, sans calcul, pourquoi c'est possible.</li><li>Laquelle des deux réponses utiliser pour classer chaque temps de réaction comme rapide ou lent ? Et pour décrire des phases ?</li></ol>
+<details><summary>Indice</summary><p>Le lissage maximise chaque coordonnée séparément ; Viterbi maximise la probabilité jointe. Regardez combien coûtent les changements d'état avec $P(x,x) = 0{,}7$ et $P(x,x') = 0{,}3$.</p></details>
+<details><summary>Corrigé</summary>
+<p><b>1.</b> $\gamma_k(2)>0{,}5$ aux instants 1, 3, 4 : suite 2-1-2-2-1.</p>
+<p><b>2.</b> Le chemin 2-1-2-2-1 contient trois changements d'état, chacun pénalisé par un facteur $0{,}3$ au lieu de $0{,}7$. Les observations ne sont pas assez tranchées (émissions qui se recouvrent) pour compenser ces pénalités : le scénario « toujours rapide » a la plus grande probabilité jointe, même si à certains instants l'état lent est individuellement plus probable. Les deux scores finaux de Viterbi sont d'ailleurs très proches ($0{,}0278$ contre $0{,}0274$).</p>
+<p><b>3.</b> Pour classer chaque essai et minimiser le nombre d'erreurs attendu instant par instant : le lissage. Pour décrire une segmentation cohérente en phases : Viterbi. Les deux répondent à des questions différentes ; ce désaccord n'a rien d'étonnant.</p>
+</details>
+<button class="ghost done" type="button" data-ex="ex13">Marquer comme compris</button>
+</article>
+</section>
+
+<section id="fiche">
+<h2>Fiche de formules</h2>
+<div class="tablewrap"><table class="cmp"><thead><tr><th>Modèle</th><th>On observe</th><th>Estimateur</th><th>Précision ou test</th></tr></thead><tbody>
+<tr><td>Chaîne de Markov</td><td>$X_1..X_n$</td><td>$\hat P(x,y) = N_n(x,y)/N_n(x+)$</td><td>$\sqrt n(\hat P-P)\to\mathcal N\big(0,P(1-P)/\pi(x)\big)$ ; $T_n\to\chi^2_{k-|E|}$</td></tr>
+<tr><td>Poisson, fenêtre fixe</td><td>$N_t$ et dates</td><td>$\hat\lambda = N_t/t$</td><td>$N_t/t\pm q\sqrt{N_t}/t$</td></tr>
+<tr><td>Poisson, arrêt en $T_n$</td><td>$T_1..T_n$</td><td>$\hat\lambda = n/T_n$</td><td>$\hat\lambda(1\pm q/\sqrt n)$</td></tr>
+<tr><td>Poisson, comptages</td><td>$d_i$ sur $[t_{i-1},t_i]$</td><td>$\hat\lambda = N_{t_n}/t_n$</td><td>idem fenêtre $[0,t_n]$</td></tr>
+<tr><td>Weibull</td><td>dates sur $[0,t]$</td><td>$1/\hat\beta = \ln t-\overline{\ln t_i}$, $\ln\hat\alpha = \ln t - \ln n/\hat\beta$</td><td>$2n\beta/\hat\beta\sim\chi^2(2n)$</td></tr>
+<tr><td>Processus de sauts</td><td>trajectoire sur $[0,t]$</td><td>$\hat A(x,y) = N_t(x,y)/R_t(x)$</td><td>diagonale : somme de ligne nulle</td></tr>
+<tr><td>HMM</td><td>$Y_1..Y_n$</td><td>EM : $\mu = \gamma_1$, $P = \sum\xi/\sum\gamma$, moyennes et variances pondérées</td><td>maximum local, plusieurs départs</td></tr>
+</tbody></table></div>
+<h3>Glossaire</h3>
+<dl class="layers">
+  <dt>$N_n(x+)$</dt><dd>Nombre de départs depuis $x$ (visites de $x$ aux instants $1..n-1$).</dd>
+  <dt>$R_t(x)$</dt><dd>Temps total passé en $x$ sur $[0,t]$, toutes visites confondues.</dd>
+  <dt>$a(x)$</dt><dd>Taux total de départ de $x$ : $-A(x,x)$. Le temps de séjour en $x$ suit $\mathcal E(a(x))$.</dd>
+  <dt>Chaîne immergée</dt><dd>La suite des états visités par un processus de sauts, sans les durées ; transition $Q(x,y) = A(x,y)/a(x)$.</dd>
+  <dt>Lissage</dt><dd>$\gamma_k(x) = \mathbb P(X_k=x\mid Y_1..Y_n)$ : utilise passé et futur. À distinguer du filtrage, qui n'utilise que $Y_1..Y_k$.</dd>
+  <dt>Forward, backward</dt><dd>Les deux récurrences qui calculent $p_k$ (passé) et $v_k$ (futur) en temps linéaire.</dd>
+  <dt>Étape E, étape M</dt><dd>Calcul des comptages espérés ; maximisation de la vraisemblance complétée avec ces comptages.</dd>
+</dl>
+</section>
+
+<section id="sources">
+<h2>Sources</h2>
+<ul>
+  <li>L. Truquet, <i>Statistiques des processus 3A</i>, polycopié ENSAI, 5 janvier 2024 : sections 2.2 à 2.8 (p. 15 à 44), 3.1 à 3.2 (p. 47 à 57), 4.1 à 4.7 (p. 61 à 80). Numéros de proposition et de page repris tels quels.</li>
+  <li>Examen terminal du 17/01/2024 (exercices 1, 2 et 3) ; TP 1 (chaînes de Markov) et TP 2 (HMM et processus de sauts) ; diaporama « Processus de Poisson homogène et non homogène ».</li>
+  <li>Les exemples marqués « données d'enseignement » sont inventés pour illustrer les calculs ; leurs résultats ont été vérifiés par un calcul indépendant en Python et recalculés en direct dans la page.</li>
+  <li>Ajouts hors cours, signalés dans le texte : normalisation numérique des récurrences, approximation de Wilson-Hilferty pour les quantiles du $\chi^2$ du calculateur.</li>
+  <li>Aucune image externe : tous les schémas sont dessinés pour cette page.</li>
+</ul>
+<footer>Page d'étude personnelle. Ouvrez-la dans un navigateur ; les formules s'affichent avec KaTeX (si la connexion manque, le texte et les calculateurs restent utilisables).</footer>
+</section>
+</main>
+</div>
+<script>
+/* ===== Moteur numérique (fonctions pures, testables) ===== */
+const SP = {};
+SP.transitionCounts = function (seq) {
+  const states = [...new Set(seq)].sort((a, b) => a - b);
+  const idx = new Map(states.map((s, i) => [s, i]));
+  const K = states.length, N = Array.from({ length: K }, () => Array(K).fill(0));
+  for (let i = 0; i + 1 < seq.length; i++) N[idx.get(seq[i])][idx.get(seq[i + 1])]++;
+  const out = N.map(r => r.reduce((a, b) => a + b, 0));
+  const P = N.map((r, i) => out[i] > 0 ? r.map(v => v / out[i]) : null);
+  return { states, N, out, P };
+};
+SP.invariant = function (P) { // itération de puissance sur une matrice stochastique complète
+  const K = P.length; let pi = Array(K).fill(1 / K);
+  for (let it = 0; it < 5000; it++) {
+    const nx = Array(K).fill(0);
+    for (let i = 0; i < K; i++) for (let j = 0; j < K; j++) nx[j] += pi[i] * P[i][j];
+    const avg = nx.map((v, j) => 0.5 * v + 0.5 * pi[j]); // version paresseuse : converge même si périodique
+    if (avg.every((v, j) => Math.abs(v - pi[j]) < 1e-13)) { pi = avg; break; }
+    pi = avg;
+  }
+  return pi;
+};
+SP.poisson = function (n, t, scheme) {
+  const lam = n / t, z = 1.959964;
+  if (scheme === 2) return { lam, lo: lam * (1 - z / Math.sqrt(n)), hi: lam * (1 + z / Math.sqrt(n)) };
+  return { lam, lo: lam - z * Math.sqrt(n) / t, hi: lam + z * Math.sqrt(n) / t };
+};
+SP.chi2q = function (k, z) { const a = 2 / (9 * k); return k * Math.pow(1 - a + z * Math.sqrt(a), 3); }; // Wilson-Hilferty
+SP.weibull = function (t, ts) {
+  const n = ts.length, sl = ts.reduce((a, b) => a + Math.log(b), 0);
+  const invb = Math.log(t) - sl / n, beta = 1 / invb, alpha = Math.exp(Math.log(t) - Math.log(n) / beta);
+  const lo = beta / (2 * n) * SP.chi2q(2 * n, -1.959964), hi = beta / (2 * n) * SP.chi2q(2 * n, 1.959964);
+  return { n, sl, invb, beta, alpha, Lam: Math.pow(t / alpha, beta), lo, hi };
+};
+SP.jumpStats = function (traj, T, K) { // traj = [[état, date d'entrée], ...]
+  const R = Array(K).fill(0), N = Array.from({ length: K }, () => Array(K).fill(0));
+  for (let k = 0; k < traj.length; k++) {
+    const [s, t0] = traj[k], t1 = k + 1 < traj.length ? traj[k + 1][1] : T;
+    R[s] += t1 - t0;
+    if (k + 1 < traj.length) N[s][traj[k + 1][0]]++;
+  }
+  return { R, N };
+};
+SP.bdEstimate = function (R, N, Nmax) {
+  let up = 0, ru = 0, dn = 0, rd = 0;
+  for (let n = 0; n < Nmax; n++) { up += N[n][n + 1]; ru += R[n]; }
+  for (let n = 1; n <= Nmax; n++) { dn += N[n][n - 1]; rd += R[n]; }
+  return { p: ru > 0 ? up / ru : NaN, q: rd > 0 ? dn / rd : NaN, up, ru, dn, rd };
+};
+SP.rng = (function () { let s = 123456789; return { seed(v) { s = v >>> 0 || 1; }, next() { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; } }; })();
+SP.simBD = function (Nmax, p, q, T, x0) {
+  const traj = [[x0, 0]]; let x = x0, t = 0;
+  while (true) {
+    const up = x < Nmax ? p : 0, dn = x > 0 ? q : 0, a = up + dn;
+    t += -Math.log(1 - SP.rng.next()) / a; if (t >= T) break;
+    x = SP.rng.next() < up / a ? x + 1 : x - 1; traj.push([x, t]);
+  }
+  return traj;
+};
+SP.solve = function (M, b) { // Gauss avec pivot partiel
+  const n = b.length, A = M.map((r, i) => [...r, b[i]]);
+  for (let c = 0; c < n; c++) {
+    let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    if (Math.abs(A[p][c]) < 1e-14) return null;
+    [A[c], A[p]] = [A[p], A[c]];
+    for (let r = 0; r < n; r++) if (r !== c) { const f = A[r][c] / A[c][c]; for (let k = c; k <= n; k++) A[r][k] -= f * A[c][k]; }
+  }
+  return A.map((r, i) => r[n] / r[i]);
+};
+SP.extinction = function (m, al, be) {
+  const A = Array.from({ length: m }, () => Array(m).fill(0));
+  for (let i = 1; i <= m; i++) { const up = i < m ? al : 0; A[i - 1][i - 1] = -(up + be); if (i < m) A[i - 1][i] = up; if (i > 1) A[i - 1][i - 2] = be; }
+  return SP.solve(A, Array(m).fill(-1));
+};
+SP.gauss = (y, m, v) => Math.exp(-(y - m) * (y - m) / (2 * v)) / Math.sqrt(2 * Math.PI * v);
+SP.hmm = function (y, mu, P, m, v) {
+  const n = y.length, K = mu.length, g = y.map(yy => m.map((mm, x) => SP.gauss(yy, mm, v[x])));
+  const p = [mu.map((u, x) => u * g[0][x])];
+  for (let k = 1; k < n; k++) p.push(g[k].map((gk, x) => gk * p[k - 1].reduce((s, pv, xp) => s + pv * P[xp][x], 0)));
+  const L = p[n - 1].reduce((a, b) => a + b, 0);
+  const vb = Array.from({ length: n }, () => Array(K).fill(1));
+  for (let k = n - 1; k > 0; k--) vb[k - 1] = Array.from({ length: K }, (_, x) => P[x].reduce((s, pxx, xp) => s + pxx * g[k][xp] * vb[k][xp], 0));
+  const gam = p.map((r, k) => r.map((pv, x) => pv * vb[k][x] / L));
+  const xi = [];
+  for (let k = 1; k < n; k++) xi.push(Array.from({ length: K }, (_, x) => Array.from({ length: K }, (_, xp) => p[k - 1][x] * P[x][xp] * g[k][xp] * vb[k][xp] / L)));
+  return { g, p, L, v: vb, gam, xi };
+};
+SP.emStep = function (y, th) {
+  const r = SP.hmm(y, th.mu, th.P, th.m, th.v), n = y.length, K = th.mu.length;
+  const mu = r.gam[0].slice();
+  const P = Array.from({ length: K }, (_, x) => { const den = r.gam.slice(0, n - 1).reduce((s, gk) => s + gk[x], 0);
+    return Array.from({ length: K }, (_, xp) => den > 1e-300 ? r.xi.reduce((s, xk) => s + xk[x][xp], 0) / den : th.P[x][xp]); });
+  const W = Array.from({ length: K }, (_, x) => r.gam.reduce((s, gk) => s + gk[x], 0));
+  const m = W.map((w, x) => w > 1e-12 ? r.gam.reduce((s, gk, k) => s + gk[x] * y[k], 0) / w : th.m[x]);
+  const v = W.map((w, x) => { if (w <= 1e-12) return th.v[x]; const s = r.gam.reduce((s2, gk, k) => s2 + gk[x] * (y[k] - m[x]) ** 2, 0) / w; return Math.max(s, 1e-8); });
+  return { before: r, th: { mu, P, m, v }, W };
+};
+SP.viterbi = function (y, mu, P, m, v) {
+  const n = y.length, K = mu.length, g = y.map(yy => m.map((mm, x) => SP.gauss(yy, mm, v[x])));
+  const V = [mu.map((u, x) => u * g[0][x])], bp = [];
+  for (let k = 1; k < n; k++) {
+    const row = [], b = [];
+    for (let x = 0; x < K; x++) { let best = 0, bv = -1; for (let xp = 0; xp < K; xp++) { const c = V[k - 1][xp] * P[xp][x]; if (c > bv) { bv = c; best = xp; } } row.push(bv * g[k][x]); b.push(best); }
+    V.push(row); bp.push(b);
+  }
+  let last = 0; for (let x = 1; x < K; x++) if (V[n - 1][x] > V[n - 1][last]) last = x;
+  const path = [last]; for (let k = n - 2; k >= 0; k--) path.push(bp[k][path[path.length - 1]]);
+  return { V, bp, path: path.reverse(), g };
+};
+
+/* ===== Mise en forme ===== */
+const $ = id => document.getElementById(id);
+const fr = (x, d = 4) => Number.isFinite(x) ? x.toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }) : 'non défini';
+function el(tag, attrs = {}, kids = []) { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k === 'text') e.textContent = v; else e.setAttribute(k, v); } for (const c of [].concat(kids)) if (c != null) e.append(c); return e; }
+function table(head, rows, caption) {
+  const t = el('table'); if (caption) t.append(el('caption', { text: caption }));
+  t.append(el('thead', {}, el('tr', {}, head.map(h => el('th', { text: h })))));
+  t.append(el('tbody', {}, rows.map(r => el('tr', {}, r.map(c => c instanceof Node ? el('td', {}, c) : el('td', { text: String(c) }))))));
+  return t;
+}
+const svgNS = 'http://www.w3.org/2000/svg';
+function s(tag, attrs = {}, text) { const e = document.createElementNS(svgNS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; }
+function err(box, msg) { box.replaceChildren(el('p', { class: 'err', text: msg })); }
+
+/* ===== Chaînes de Markov ===== */
+function runMarkov() {
+  const box = $('mk-out'), raw = $('mk-seq').value.replace(/[^0-9]/g, '');
+  if (raw.length < 2) return err(box, 'Il faut au moins deux états pour observer une transition.');
+  const seq = [...raw].map(Number), r = SP.transitionCounts(seq), K = r.states.length;
+  const head = ['depuis \\ vers', ...r.states.map(String), 'N(x+)'];
+  const kids = [table(head, r.states.map((x, i) => [String(x), ...r.N[i], r.out[i]]), `Comptages : ${seq.length - 1} transitions (n = ${seq.length})`)];
+  kids.push(table(['depuis \\ vers', ...r.states.map(String), 'somme'], r.states.map((x, i) => r.P[i] ? [String(x), ...r.P[i].map(v => fr(v, 3)), fr(r.P[i].reduce((a, b) => a + b, 0), 3)] : [String(x), ...r.states.map(() => '?'), 'ligne non identifiable']), 'Estimateur du maximum de vraisemblance P̂(x, y) = N(x, y) / N(x+)'));
+  const ll = r.N.reduce((s1, row, i) => s1 + row.reduce((s2, c, j) => s2 + (c > 0 ? c * Math.log(r.P[i][j]) : 0), 0), 0);
+  const notes = [el('p', { text: `Log-vraisemblance maximale : ${fr(ll, 3)}.` })];
+  if (r.P.every(Boolean)) {
+    const pi = SP.invariant(r.P);
+    notes.push(el('p', { text: `Loi invariante estimée (solution de π P̂ = π) : ${r.states.map((x, i) => `π(${x}) = ${fr(pi[i], 3)}`).join(' ; ')}.` }));
+  } else notes.push(el('p', { class: 'err', text: 'Au moins un état n\'a jamais été quitté : sa ligne n\'est pas estimable, la loi invariante n\'est pas calculée.' }));
+  const ic = []; r.states.forEach((x, i) => { if (!r.P[i]) return; r.states.forEach((yv, j) => { const p = r.P[i][j], h = 1.96 * Math.sqrt(p * (1 - p) / r.out[i]); ic.push([`P(${x}, ${yv})`, fr(p, 3), r.out[i], `[${fr(Math.max(0, p - h), 3)} ; ${fr(Math.min(1, p + h), 3)}]`]); }); });
+  kids.push(...notes, table(['case', 'P̂', 'N(x+)', 'IC asymptotique 95 %'], ic, 'Intervalles : P̂ ± 1,96 √(P̂(1 − P̂) / N(x+)) (Proposition 8)'));
+  box.replaceChildren(...kids.map(k => k.tagName === 'TABLE' ? el('div', { class: 'tablewrap' }, k) : k));
+}
+function runTLC() {
+  const box = $('tl-out'), n = +$('tl-n').value, p = +$('tl-p').value, q = +$('tl-q').value, N = +$('tl-N').value;
+  if (!(n >= 10 && n <= 5000 && p > 0 && p < 1 && q > 0 && q < 1 && N >= 50 && N <= 5000)) return err(box, 'Valeurs hors domaine : 10 ≤ n ≤ 5000, 0 < p, q < 1, 50 ≤ N ≤ 5000.');
+  SP.rng.seed(20260101 + n + Math.round(1000 * p) + 7 * N);
+  const S = [];
+  for (let r = 0; r < N; r++) {
+    let x = SP.rng.next() < q / (p + q) ? 0 : 1, n01 = 0, n0 = 0;
+    for (let i = 1; i < n; i++) { const nx = x === 0 ? (SP.rng.next() < p ? 1 : 0) : (SP.rng.next() < q ? 0 : 1); if (x === 0) { n0++; if (nx === 1) n01++; } x = nx; }
+    if (n0 === 0) continue; const ph = n01 / n0; if (ph <= 0 || ph >= 1) continue;
+    S.push(Math.sqrt(n) * (ph - p) / Math.sqrt(ph * (1 - ph) / (n0 / n)));
+  }
+  const mean = S.reduce((a, b) => a + b, 0) / S.length, sd = Math.sqrt(S.reduce((a, b) => a + (b - mean) ** 2, 0) / (S.length - 1));
+  const cover = S.filter(v => Math.abs(v) <= 1.96).length / S.length;
+  const W = 600, H = 220, lo = -4, hi = 4, bins = 32, bw = (hi - lo) / bins, cnt = Array(bins).fill(0);
+  S.forEach(v => { const b = Math.floor((v - lo) / bw); if (b >= 0 && b < bins) cnt[b]++; });
+  const dens = cnt.map(c => c / (S.length * bw)), ymax = 0.5, X = v => 40 + (v - lo) / (hi - lo) * (W - 60), Y = d => H - 30 - d / ymax * (H - 50);
+  const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Histogramme des valeurs simulées de S_n et densité de la loi normale centrée réduite' });
+  dens.forEach((d, b) => svg.append(s('rect', { x: X(lo + b * bw) + 1, y: Y(d), width: (W - 60) / bins - 2, height: Math.max(0, H - 30 - Y(d)), fill: '#2b5d8a', opacity: .45 })));
+  let path = ''; for (let i = 0; i <= 200; i++) { const v = lo + (hi - lo) * i / 200; path += (i ? 'L' : 'M') + X(v).toFixed(1) + ',' + Y(Math.exp(-v * v / 2) / Math.sqrt(2 * Math.PI)).toFixed(1); }
+  svg.append(s('path', { d: path, fill: 'none', stroke: '#b4641b', 'stroke-width': 2.5 }));
+  svg.append(s('line', { x1: 40, x2: W - 20, y1: H - 30, y2: H - 30, stroke: 'currentColor', 'stroke-opacity': .5 }));
+  [-3, -2, -1, 0, 1, 2, 3].forEach(v => svg.append(s('text', { x: X(v) - 4, y: H - 12, 'font-size': 11 }, String(v))));
+  svg.append(s('text', { x: W - 200, y: 22, 'font-size': 12 }, 'barres : S_n simulés'), s('text', { x: W - 200, y: 40, 'font-size': 12, fill: '#b4641b' }, 'courbe : densité N(0, 1)'));
+  box.replaceChildren(svg, el('p', { text: `${S.length} valeurs utiles. Moyenne ${fr(mean, 3)} (attendu 0), écart-type ${fr(sd, 3)} (attendu 1), proportion dans [−1,96 ; 1,96] : ${fr(100 * cover, 1)} % (attendu 95 %).` }), el('p', { class: 'calc', text: 'Lecture : si les barres suivent la courbe, l\'intervalle de la Proposition 8 a bien le niveau annoncé pour ce n.' }));
+}
+
+/* ===== Poisson, Weibull ===== */
+function runPoisson() {
+  const box = $('po-out'), n = +$('po-n').value, t = +$('po-t').value, sc = +$('po-s').value;
+  if (!(Number.isInteger(n) && n >= 0 && t > 0)) return err(box, 'n doit être un entier positif ou nul et le temps strictement positif.');
+  if (n === 0) return box.replaceChildren(el('p', { text: 'Aucun événement : la vraisemblance e^(−λt) décroît, le maximum est au bord (λ̂ = 0 si l\'on autorise λ = 0) et l\'intervalle asymptotique n\'a pas de sens.' }));
+  const r = SP.poisson(n, t, sc);
+  box.replaceChildren(el('p', { text: `λ̂ = ${n} / ${fr(t, 2)} = ${fr(r.lam, 3)} événement(s) par unité de temps.` }), el('p', { class: 'calc', text: sc === 1 ? `IC 95 % : λ̂ ± 1,96 √n / t = ${fr(r.lam, 3)} ± ${fr(r.hi - r.lam, 3)} → [${fr(r.lo, 3)} ; ${fr(r.hi, 3)}]` : `IC 95 % : λ̂ (1 ± 1,96 / √n) → [${fr(r.lo, 3)} ; ${fr(r.hi, 3)}]` }), el('p', { text: sc === 1 ? 'Exposition : la fenêtre entière [0, t], fixée à l\'avance.' : 'Exposition : le temps T_n du n-ième événement, qui est aléatoire ; n est fixé.' }));
+}
+function runWeibull() {
+  const box = $('wb-out'), t = +$('wb-t').value, ts = $('wb-d').value.split(/[\s;]+/).filter(Boolean).map(v => +v.replace(',', '.'));
+  if (!(t > 0) || ts.length === 0 || ts.some(v => !(v > 0 && v <= t))) return err(box, 'Il faut t > 0 et au moins une date dans ]0, t].');
+  if (ts.every(v => v === t)) return err(box, 'Toutes les dates valent t : 1/β̂ = 0, l\'estimateur n\'est pas défini.');
+  const r = SP.weibull(t, ts);
+  box.replaceChildren(el('p', { class: 'calc', text: `n = ${r.n} ; Σ ln tᵢ = ${fr(r.sl, 4)} ; 1/β̂ = ln ${fr(t, 2)} − ${fr(r.sl, 4)}/${r.n} = ${fr(r.invb, 4)}` }), el('p', { text: `β̂ = ${fr(r.beta, 3)} ; α̂ = ${fr(r.alpha, 3)} ; contrôle Λ(t) = (t/α̂)^β̂ = ${fr(r.Lam, 3)} (doit valoir n).` }), el('p', { text: `IC 95 % pour β (Proposition 18) : [${fr(r.lo, 3)} ; ${fr(r.hi, 3)}]. ${r.lo > 1 ? 'L\'intervalle est au-dessus de 1 : les événements s\'accélèrent.' : r.hi < 1 ? 'L\'intervalle est sous 1 : les événements ralentissent.' : 'L\'intervalle contient 1 : un taux constant n\'est pas exclu.'}` }));
+}
+
+/* ===== Processus de sauts ===== */
+const JTRAJ = [[0, 0], [1, 1.5], [2, 2.3], [1, 3.9], [0, 4.4], [1, 6.0], [0, 7.2], [1, 8.0], [2, 8.5], [1, 9.6]], JT = 10;
+function drawJump() {
+  const svg = $('jump-svg'), W = 640, H = 190, X = t => 50 + t / JT * (W - 80), Y = x => 150 - x * 55;
+  [0, 1, 2].forEach(x => { svg.append(s('line', { x1: 50, x2: W - 30, y1: Y(x), y2: Y(x), stroke: 'currentColor', 'stroke-opacity': .12 }), s('text', { x: 18, y: Y(x) + 4, 'font-size': 12 }, 'état ' + x)); });
+  const colors = ['#1f6f5c', '#b4641b', '#2b5d8a'];
+  JTRAJ.forEach(([x, t0], k) => { const t1 = k + 1 < JTRAJ.length ? JTRAJ[k + 1][1] : JT;
+    svg.append(s('line', { x1: X(t0), x2: X(t1), y1: Y(x), y2: Y(x), stroke: colors[x], 'stroke-width': 4 }));
+    if (k + 1 < JTRAJ.length) svg.append(s('line', { x1: X(t1), x2: X(t1), y1: Y(x), y2: Y(JTRAJ[k + 1][0]), stroke: 'currentColor', 'stroke-dasharray': '3 3', 'stroke-opacity': .6 })); });
+  svg.append(s('line', { x1: 50, x2: W - 30, y1: 172, y2: 172, stroke: 'currentColor', 'stroke-opacity': .5 }));
+  [0, 2, 4, 6, 8, 10].forEach(t => svg.append(s('text', { x: X(t) - 4, y: 187, 'font-size': 11 }, String(t))));
+  const r = SP.jumpStats(JTRAJ, JT, 3);
+  const rows = [0, 1, 2].map(x => [String(x), fr(r.R[x], 1), ...[0, 1, 2].map(y => x === y ? '·' : r.N[x][y])]);
+  $('jump-table').append(table(['état x', 'R_t(x)', 'N(x,0)', 'N(x,1)', 'N(x,2)'], rows, 'Temps passé et nombre de sauts, lus sur la trajectoire'));
+}
+function runJump() {
+  const box = $('jp-out'), Nm = +$('jp-N').value, p = +$('jp-p').value, q = +$('jp-q').value, T = +$('jp-T').value;
+  if (!(Number.isInteger(Nm) && Nm >= 1 && Nm <= 30 && p > 0 && q > 0 && T > 0 && T <= 200000)) return err(box, 'Valeurs attendues : 1 ≤ N ≤ 30 entier, p > 0, q > 0, 0 < T ≤ 200 000.');
+  SP.rng.seed(4242 + Nm * 31 + Math.round(p * 100) * 7 + Math.round(q * 100) + Math.round(T));
+  const traj = SP.simBD(Nm, p, q, T, 0), r = SP.jumpStats(traj, T, Nm + 1), e = SP.bdEstimate(r.R, r.N, Nm);
+  const rr = p / q, z = Array.from({ length: Nm + 1 }, (_, k) => rr ** k), Z = z.reduce((a, b) => a + b, 0);
+  const rows = Array.from({ length: Nm + 1 }, (_, x) => [String(x), fr(r.R[x], 2), fr(r.R[x] / T, 3), fr(z[x] / Z, 3)]);
+  box.replaceChildren(el('p', { text: `${traj.length - 1} sauts simulés sur [0, ${T}].` }), el('p', { class: 'calc', text: `p̂ = ${e.up} sauts montants / ${fr(e.ru, 2)} unités de temps = ${fr(e.p, 4)}   (vrai p = ${p})` }), el('p', { class: 'calc', text: `q̂ = ${e.dn} sauts descendants / ${fr(e.rd, 2)} unités de temps = ${fr(e.q, 4)}   (vrai q = ${q})` }), el('div', { class: 'tablewrap' }, table(['état', 'R_T(x)', 'fraction du temps', 'π(x) théorique'], rows, 'Théorème 9 : la fraction de temps passée en x tend vers π(x) ∝ (p/q)^x')));
+}
+function runExt() {
+  const box = $('ex-out'), m = +$('ex-m').value, a = +$('ex-a').value, b = +$('ex-b').value;
+  if (!(Number.isInteger(m) && m >= 1 && m <= 60 && a >= 0 && b > 0)) return err(box, 'Valeurs attendues : 1 ≤ m ≤ 60 entier, α ≥ 0, β > 0.');
+  const E = SP.extinction(m, a, b); if (!E) return err(box, 'Système singulier.');
+  box.replaceChildren(el('div', { class: 'tablewrap' }, table(['infectés au départ i', 'E_i(τ)'], E.map((v, i) => [i + 1, fr(v, 3)]), `α = ${a}, β = ${b}, m = ${m}`)), el('p', { text: a < b ? 'Les guérisons l\'emportent : l\'extinction est rapide et le temps croît à peu près linéairement avec i.' : 'Les contaminations l\'emportent : l\'épidémie se maintient longtemps avant de s\'éteindre (0 reste absorbant, donc l\'extinction finit toujours par arriver).' }));
+}
+
+/* ===== HMM ===== */
+const HY = [6.2, 5.7, 6.3, 6.1, 5.9], H0 = { mu: [0.5, 0.5], P: [[0.7, 0.3], [0.3, 0.7]], m: [5.8, 6.3], v: [0.09, 0.09] };
+const R0 = SP.hmm(HY, H0.mu, H0.P, H0.m, H0.v), V0 = SP.viterbi(HY, H0.mu, H0.P, H0.m, H0.v);
+const ST = ['1 rapide', '2 lent'];
+function drawHMM() {
+  const g = $('hm-nodes'), X = k => 110 + k * 120;
+  for (let k = 0; k < 5; k++) {
+    g.append(s('circle', { cx: X(k), cy: 55, r: 24, fill: 'none', stroke: '#b4641b', 'stroke-width': 2 }), s('text', { x: X(k) - 10, y: 60, 'font-size': 14 }, 'X' + (k + 1)));
+    g.append(s('rect', { x: X(k) - 26, y: 142, width: 52, height: 40, fill: 'none', stroke: '#2b5d8a', 'stroke-width': 2 }), s('text', { x: X(k) - 10, y: 167, 'font-size': 14 }, 'Y' + (k + 1)));
+    g.append(s('line', { x1: X(k), x2: X(k), y1: 80, y2: 138, stroke: 'currentColor', 'marker-end': 'url(#ar)' }));
+    if (k < 4) g.append(s('line', { x1: X(k) + 25, x2: X(k + 1) - 28, y1: 55, y2: 55, stroke: 'currentColor', 'marker-end': 'url(#ar)' }));
+  }
+  g.append(s('text', { x: 300, y: 25, 'font-size': 12 }, 'transitions P(x, x\')'), s('text', { x: 125, y: 115, 'font-size': 12 }, 'émission g(y | x)'));
+  $('hmm-g').append(table(['k', 'Y_k', 'g(Y_k | 1)', 'g(Y_k | 2)'], HY.map((y, k) => [k + 1, fr(y, 1), fr(R0.g[k][0], 4), fr(R0.g[k][1], 4)]), 'Densités d\'émission évaluées aux observations'));
+  $('hmm-fb-table').append(table(['k', 'p_k(1)', 'p_k(2)', 'v_k(1)', 'v_k(2)', 'γ_k(1)', 'γ_k(2)'], HY.map((_, k) => [k + 1, fr(R0.p[k][0], 5), fr(R0.p[k][1], 5), fr(R0.v[k][0], 5), fr(R0.v[k][1], 5), fr(R0.gam[k][0], 4), fr(R0.gam[k][1], 4)]), `Forward, backward et lissage. L_n = Σ_x p_5(x) = ${fr(R0.L, 5)}, ln L_n = ${fr(Math.log(R0.L), 4)}`));
+  $('hmm-xi-table').append(table(['k', 'ξ(1→1)', 'ξ(1→2)', 'ξ(2→1)', 'ξ(2→2)', 'somme'], R0.xi.map((x, i) => [`${i + 1} → ${i + 2}`, fr(x[0][0], 4), fr(x[0][1], 4), fr(x[1][0], 4), fr(x[1][1], 4), fr(x[0][0] + x[0][1] + x[1][0] + x[1][1], 4)]), 'Probabilités de transition a posteriori ξ_k(x, x\')'));
+}
+let fwK = 0;
+function showFwd() {
+  const k = fwK, out = $('fw-out'); $('fw-pos').textContent = `temps k = ${k + 1} sur 5`;
+  const lines = [];
+  if (k === 0) H0.mu.forEach((u, x) => lines.push(`p₁(${x + 1}) = μ(${x + 1}) g(Y₁|${x + 1}) = ${fr(u, 2)} × ${fr(R0.g[0][x], 4)} = ${fr(R0.p[0][x], 5)}`));
+  else [0, 1].forEach(x => lines.push(`p${k + 1}(${x + 1}) = g(Y${k + 1}|${x + 1}) × [p${k}(1) P(1,${x + 1}) + p${k}(2) P(2,${x + 1})] = ${fr(R0.g[k][x], 4)} × [${fr(R0.p[k - 1][0], 5)} × ${fr(H0.P[0][x], 1)} + ${fr(R0.p[k - 1][1], 5)} × ${fr(H0.P[1][x], 1)}] = ${fr(R0.p[k][x], 5)}`));
+  if (k === 4) lines.push(`L₅ = p₅(1) + p₅(2) = ${fr(R0.L, 5)}`);
+  out.replaceChildren(...lines.map(t => el('p', { text: t })));
+  $('fw-prev').disabled = k === 0; $('fw-next').disabled = k === 4;
+}
+let emIt = 0, emTh = JSON.parse(JSON.stringify(H0)), emHist = [];
+function logLik(th) { return Math.log(SP.hmm(HY, th.mu, th.P, th.m, th.v).L); }
+function showEM(step) {
+  const out = $('em-out');
+  if (step) { const r = SP.emStep(HY, emTh); emHist.push(logLik(emTh)); emTh = r.th; emIt++; }
+  const ll = logLik(emTh), th = emTh;
+  $('em-pos').textContent = `itération ${emIt}`;
+  const rows = [['μ', fr(th.mu[0], 4), fr(th.mu[1], 4)], ['P(x, 1)', fr(th.P[0][0], 4), fr(th.P[1][0], 4)], ['P(x, 2)', fr(th.P[0][1], 4), fr(th.P[1][1], 4)], ['moyenne β₁,ₓ', fr(th.m[0], 4), fr(th.m[1], 4)], ['variance β₂,ₓ', fr(th.v[0], 4), fr(th.v[1], 4)]];
+  const kids = [el('div', { class: 'tablewrap' }, table(['paramètre', 'état 1', 'état 2'], rows, emIt === 0 ? 'Paramètres initiaux' : `Paramètres après ${emIt} itération(s)`)), el('p', { text: `ln L = ${fr(ll, 4)}` + (emHist.length ? `   (avant : ${fr(emHist[emHist.length - 1], 4)}, variation ${ll - emHist[emHist.length - 1] >= -1e-10 ? '+' : ''}${fr(ll - emHist[emHist.length - 1], 4)})` : '') })];
+  if (emIt === 1) { const W = SP.emStep(HY, H0).W; kids.push(el('p', { class: 'calc', text: `Contrôle de la première itération : poids totaux Σγ(1) = ${fr(W[0], 4)}, Σγ(2) = ${fr(W[1], 4)} ; nouvelle moyenne de l'état 1 = Σ γₖ(1) Yₖ / Σγ(1) = ${fr(th.m[0], 4)}.` })); }
+  if (emIt >= 3) kids.push(el('p', { class: 'note', text: 'Avec seulement 5 observations, les variances fondent vite : la vraisemblance gaussienne n\'est pas bornée quand une variance tend vers 0. C\'est un défaut connu des petits échantillons ; ici la variance est plafonnée par en dessous à 10⁻⁸ pour éviter une division par zéro.' }));
+  out.replaceChildren(...kids);
+}
+function drawViterbi() {
+  const svg = $('vit-svg'), X = k => 70 + k * 125, Y = x => 60 + x * 110, V = V0;
+  for (let k = 1; k < 5; k++) for (let x = 0; x < 2; x++) for (let xp = 0; xp < 2; xp++) {
+    const chosen = V.bp[k - 1][x] === xp;
+    svg.append(s('line', { x1: X(k - 1), y1: Y(xp), x2: X(k), y2: Y(x), stroke: 'currentColor', 'stroke-opacity': chosen ? .8 : .18, 'stroke-width': chosen ? 2.5 : 1 }));
+  }
+  for (let k = 1; k < 5; k++) svg.append(s('line', { x1: X(k - 1), y1: Y(V.path[k - 1]), x2: X(k), y2: Y(V.path[k]), stroke: '#1f6f5c', 'stroke-width': 6, 'stroke-opacity': .55 }));
+  for (let k = 0; k < 5; k++) for (let x = 0; x < 2; x++) {
+    const on = V.path[k] === x;
+    svg.append(s('circle', { cx: X(k), cy: Y(x), r: 22, fill: on ? '#1f6f5c' : 'var(--paper, #fff)', stroke: x === 0 ? '#1f6f5c' : '#b4641b', 'stroke-width': 2 }));
+    svg.append(s('text', { x: X(k) - 17, y: Y(x) + 4, 'font-size': 10, fill: on ? '#fff' : 'currentColor' }, fr(V.V[k][x], 4)));
+  }
+  [0, 1].forEach(x => svg.append(s('text', { x: 2, y: Y(x) + 4, 'font-size': 12 }, 'état ' + (x + 1))));
+  for (let k = 0; k < 5; k++) svg.append(s('text', { x: X(k) - 8, y: 222, 'font-size': 12 }, 'k=' + (k + 1)));
+  const rows = HY.map((_, k) => [k + 1, fr(V.V[k][0], 5), fr(V.V[k][1], 5), k === 0 ? '·' : `1 ← ${V.bp[k - 1][0] + 1}, 2 ← ${V.bp[k - 1][1] + 1}`, String(V.path[k] + 1)]);
+  $('vit-table').append(table(['k', 'V_k(1)', 'V_k(2)', 'meilleur prédécesseur', 'chemin retenu'], rows, `Fin : V₅(1) = ${fr(V.V[4][0], 5)} > V₅(2) = ${fr(V.V[4][1], 5)}, on part de l'état 1 et on remonte les flèches`));
+  const marg = R0.gam.map(r => r[0] >= r[1] ? 1 : 2);
+  $('cmp-table').append(table(['instant k', '1', '2', '3', '4', '5'], [['γ_k(2)', ...R0.gam.map(r => fr(r[1], 3))], ['lissage : argmax γ_k', ...marg.map(String)], ['Viterbi', ...V.path.map(x => String(x + 1))]]));
+}
+
+/* ===== Navigation, exercices, progression ===== */
+function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+function refreshProg() { const done = JSON.parse(store('sp-done') || '[]'); $('prog').textContent = done.length; document.querySelectorAll('button.done').forEach(b => { const on = done.includes(b.dataset.ex); b.textContent = on ? 'Compris (cliquer pour annuler)' : 'Marquer comme compris'; b.setAttribute('aria-pressed', on); }); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.classList.contains('done')) { let d = JSON.parse(store('sp-done') || '[]'); d = d.includes(b.dataset.ex) ? d.filter(x => x !== b.dataset.ex) : [...d, b.dataset.ex]; store('sp-done', JSON.stringify(d)); refreshProg(); }
+  if (b.dataset.check) { const id = b.dataset.check, v = parseFloat($(id).value.replace(',', '.')), ans = +b.dataset.ans, tol = +b.dataset.tol, fb = $(id + '-fb');
+    if (!Number.isFinite(v)) { fb.textContent = 'Entrez un nombre.'; fb.className = 'fb bad'; return; }
+    const ok = Math.abs(v - ans) <= tol + 1e-12; fb.textContent = ok ? 'Correct.' : 'Pas encore : revoyez l\'indice ou le corrigé.'; fb.className = 'fb ' + (ok ? 'good' : 'bad'); }
+});
+function spy() {
+  const links = [...document.querySelectorAll('#toc a')], secs = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  if (!('IntersectionObserver' in window)) return;
+  const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { links.forEach(a => a.removeAttribute('aria-current')); const a = links.find(l => l.getAttribute('href') === '#' + en.target.id); if (a) a.setAttribute('aria-current', 'true'); } }), { rootMargin: '0px 0px -75% 0px' });
+  secs.forEach(sx => io.observe(sx));
+}
+document.addEventListener('DOMContentLoaded', () => {
+  $('mk-go').addEventListener('click', runMarkov); runMarkov();
+  $('tl-go').addEventListener('click', runTLC);
+  $('po-go').addEventListener('click', runPoisson); runPoisson();
+  $('wb-go').addEventListener('click', runWeibull); runWeibull();
+  drawJump(); $('jp-go').addEventListener('click', runJump);
+  $('ex-go').addEventListener('click', runExt); runExt();
+  drawHMM(); showFwd(); drawViterbi(); showEM(false);
+  $('fw-next').addEventListener('click', () => { fwK = Math.min(4, fwK + 1); showFwd(); });
+  $('fw-prev').addEventListener('click', () => { fwK = Math.max(0, fwK - 1); showFwd(); });
+  $('fw-reset').addEventListener('click', () => { fwK = 0; showFwd(); });
+  $('em-next').addEventListener('click', () => showEM(true));
+  $('em-reset').addEventListener('click', () => { emIt = 0; emTh = JSON.parse(JSON.stringify(H0)); emHist = []; showEM(false); });
+  $('resetProg').addEventListener('click', () => { store('sp-done', '[]'); refreshProg(); });
+  refreshProg(); spy();
+});
+window.addEventListener('load', () => {
+  if (window.renderMathInElement) renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }], throwOnError: false, ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'input'] });
+});
+window.SP = SP;
+</script>
+</body>
+</html>
