@@ -95,6 +95,7 @@ details { border-top: 1px solid var(--rule); padding: .5rem 0; }
 details:last-of-type { border-bottom: 1px solid var(--rule); }
 summary { cursor: pointer; font-weight: 600; color: var(--accent); }
 details[open] > summary { margin-bottom: .5rem; }
+.exercise pre { max-width: 100%; overflow-x: auto; background: color-mix(in srgb, var(--accent) 5%, transparent); padding: .7rem .9rem; border-radius: 4px; font-size: .82rem; line-height: 1.45; }
 details.cours { border: 0; margin: .45rem 0 .2rem; padding: 0; }
 details.cours > summary { font-weight: 500; font-size: .9rem; color: var(--muted, #5b6470); }
 details.cours[open] { background: color-mix(in srgb, var(--accent) 6%, transparent); border-left: 3px solid var(--accent); padding: .5rem .8rem; border-radius: 4px; }
@@ -648,7 +649,7 @@ $\mu = (0{,}5;\ 0{,}5)$, $P = \begin{pmatrix}0{,}7&0{,}3\\0{,}3&0{,}7\end{pmatri
 </section>
 <section id="exercices">
 <h2>Atelier d'exercices</h2>
-<p>Chaque exercice part d'une question du cours, des TP ou de l'examen 2024 (ses trois exercices sont repris en entier : exercices 3, 10 et 7). Les exercices 14 à 19 font estimer un HMM et dérouler Viterbi à la main. Sous chaque question, « Rappel du cours » déplie l'énoncé du polycopié qui sert à y répondre. Lisez l'énoncé, essayez, ouvrez l'indice seulement si vous bloquez, puis comparez au corrigé. Les cases « Vérifier » donnent un retour immédiat sur les résultats numériques.</p>
+<p>Chaque exercice part d'une question du cours, des TP ou de l'examen 2024 (ses trois exercices sont repris en entier : exercices 3, 10 et 7) ou de l'examen 2022 (exercices 20, 21 et 22). Les exercices 14 à 19 font estimer un HMM et dérouler Viterbi à la main. Sous chaque question, « Rappel du cours » déplie l'énoncé du polycopié qui sert à y répondre. Lisez l'énoncé, essayez, ouvrez l'indice seulement si vous bloquez, puis comparez au corrigé. Les cases « Vérifier » donnent un retour immédiat sur les résultats numériques.</p>
 
 <article class="exercise" id="ex1">
 <h3>1. Une marche aléatoire n'est jamais récurrente positive</h3>
@@ -1229,6 +1230,157 @@ $\mu=(0{,}6;\ 0{,}4)$, $\ P=\begin{pmatrix}0{,}9&0{,}1\\0{,}1&0{,}9\end{pmatrix}
 <ul><li>« Ce jour-là, quel est l'état le plus probable ? » → le lissage (ici : probablement malade le jour 4).</li><li>« Quelle histoire complète est la plus probable ? » → Viterbi (ici : resté en forme tout du long).</li></ul>
 <p>Pour décider de soigner le patient au jour 4, c'est la question du lissage qui compte.</p></details><div class="check"><label for="c19">$V_4(1)$ (5 décimales) :</label><input id="c19" class="num" type="text" inputmode="decimal"><button class="ghost" type="button" data-check="c19" data-ans="0.02519" data-tol="0.00002">Vérifier</button><span class="fb" id="c19-fb" aria-live="polite"></span></div><button class="ghost done" type="button" data-ex="ex19">Marquer comme compris</button>
 </article>
+<article class="exercise" id="ex20">
+<h3>20. Examen 2022, exercice 1 : les deux probabilités de transition sont-elles égales ?</h3>
+<p class="meta">Niveau : examen · Source : Examen terminal du 15/12/2022, exercice 1 (énoncé complet)</p>
+<p>Chaîne de Markov à deux états de transition $P=\begin{pmatrix}1-p&p\\q&1-q\end{pmatrix}$, $0<p,q<1$, observée sur une trajectoire $X_1,\dots,X_n$.</p>
+<ol class="tasks">
+<li>Rappeler l'expression de l'EMV $(\hat p,\hat q)$ du couple $(p,q)$.<details class="cours"><summary>Rappel du cours : Exercice 7, p. 43 et section 2.4.4</summary><p><b>Exercice 7.</b> « Chaîne à deux états, $P=\begin{pmatrix}1-p&p\\q&1-q\end{pmatrix}$, $0<p,q<1$. Déterminer le maximum de vraisemblance de $(p,q)$ et ses propriétés asymptotiques. »</p><p><b>Section 2.4.4 :</b> $\hat P(x,y)=N_n(x,y)/N_n(x+)$, ligne par ligne (Lemme 2).</p></details></li>
+<li>Les hypothèses du cours permettant d'avoir la consistance et la normalité asymptotique de $(\hat p,\hat q)$ sont-elles vérifiées ? Justifier.<details class="cours"><summary>Rappel du cours : Proposition 8, p. 30 : hypothèses</summary><p><b>Hypothèses de la Proposition 8.</b> $X$ est une chaîne de Markov sur un ensemble $E$ <b>fini</b> et <b>irréductible</b> (donc récurrente positive, Corollaire 1, p. 17), de probabilité invariante $\pi$. Sous ces hypothèses, $\hat P$ est fortement consistant et asymptotiquement gaussien.</p>
+  <p><b>Définition 3, p. 12.</b> Irréductible : pour tout $(x,y)$, il existe $n$ tel que $P^n(x,y)>0$.</p></details></li>
+<li>Rappeler la loi asymptotique de $\sqrt n(\hat p-p,\ \hat q-q)$.<details class="cours"><summary>Rappel du cours : Proposition 8, p. 30</summary><p><b>Énoncé.</b> Soit $X$ une chaîne de Markov sur $E$ fini, irréductible (donc récurrente positive), de transition $P$ et de probabilité invariante $\pi$. Alors $\hat P$ est fortement consistant et $\big(\sqrt n(\hat P(x,y)-P(x,y))\big)_{(x,y)}$ converge en loi vers un vecteur gaussien centré $(Z_{x,y})$ tel que</p><div class="eq">$$\operatorname{Cov}(Z_{x,y},Z_{x',y'}) = \frac{1}{\pi(x)}P(x,y)\big(\mathbf 1_{y=y'}-P(x',y')\big)\mathbf 1_{x=x'}.$$</div><p>Le polycopié note l'indépendance asymptotique de $\hat P(x,y)$ et $\hat P(x',y')$ quand $x\ne x'$. La démonstration pas à pas est dans la sous-section <a href="#markov-demo">Démonstration complète</a>.</p></details><details class="cours"><summary>Rappel du cours : Définition 5, p. 17 et Corollaire 1</summary><p><b>Définition 5.</b> $\pi$ est invariante si $\pi P=\pi$. Pour deux états, cela se réduit à une équation d'équilibre : $\pi(0)p=\pi(1)q$. Le <b>Corollaire 1</b> garantit l'unicité pour une chaîne irréductible récurrente positive.</p></details></li>
+<li>Sous l'hypothèse $p=q$, en déduire la loi asymptotique de $\sqrt n(\hat p-\hat q)$.<details class="cours"><summary>Rappel du cours : Corollaire 3, p. 27 et lemme de Slutsky</summary><p><b>Corollaire 3.</b> Soient $X$ irréductible, récurrente positive, de transition $P$, et $h : E\times E\to\mathbb R$ avec $\int P(h^2)\,d\pi<+\infty$. Alors</p><div class="eq">$$\frac{1}{\sqrt n}\sum_{k=1}^n\big[h(X_{k-1},X_k)-Ph(X_{k-1})\big]\xrightarrow{\mathcal L}\mathcal N(0,\sigma^2),\qquad \sigma^2=\int P(h^2)\,d\pi-\int(Ph)^2\,d\pi.$$</div><p><b>Slutsky</b> (utilisé p. 51 et dans la preuve de la Proposition 8) : si $U_n\xrightarrow{\mathcal L}U$ et $V_n\xrightarrow{\mathbb P}c$, alors $V_nU_n\xrightarrow{\mathcal L}cU$. C'est ce qui permet de remplacer $\sigma$ par $\hat\sigma$.</p></details></li>
+<li>En déduire un test de $H_0 : p=q$ contre $H_1 : p\ne q$.<details class="cours"><summary>Rappel du cours : Corollaire 3, p. 27 et lemme de Slutsky</summary><p><b>Corollaire 3.</b> Soient $X$ irréductible, récurrente positive, de transition $P$, et $h : E\times E\to\mathbb R$ avec $\int P(h^2)\,d\pi<+\infty$. Alors</p><div class="eq">$$\frac{1}{\sqrt n}\sum_{k=1}^n\big[h(X_{k-1},X_k)-Ph(X_{k-1})\big]\xrightarrow{\mathcal L}\mathcal N(0,\sigma^2),\qquad \sigma^2=\int P(h^2)\,d\pi-\int(Ph)^2\,d\pi.$$</div><p><b>Slutsky</b> (utilisé p. 51 et dans la preuve de la Proposition 8) : si $U_n\xrightarrow{\mathcal L}U$ et $V_n\xrightarrow{\mathbb P}c$, alors $V_nU_n\xrightarrow{\mathcal L}cU$. C'est ce qui permet de remplacer $\sigma$ par $\hat\sigma$.</p></details></li>
+<li><i>(Application ajoutée pour s'entraîner, hors examen)</i> $n=201$, $N_n(0,1)=30$, $N_n(0+)=100$, $N_n(1,0)=50$, $N_n(1+)=100$. Conclure au niveau 5 %.</li>
+</ol>
+<details><summary>Indice</summary><p>Sous $p=q$, la loi invariante devient $(1/2,1/2)$. Les deux estimateurs viennent de deux lignes différentes : ils sont asymptotiquement indépendants, donc les variances s'additionnent.</p></details>
+<details><summary>Corrigé détaillé</summary>
+<p class="reading">Image : une lampe. $p$ = chance de l'allumer quand elle est éteinte, $q$ = chance de l'éteindre quand elle est allumée. On se demande si ces deux chances sont les mêmes.</p>
+<p><b>Question 1.</b> On compte, puis on divise :</p>
+<div class="eq">$$\hat p=\frac{N_n(0,1)}{N_n(0+)},\qquad\hat q=\frac{N_n(1,0)}{N_n(1+)}.$$</div>
+<p>$\hat p$ : parmi les fois où la lampe était éteinte, la part où on l'a allumée. $\hat q$ : parmi les fois où elle était allumée, la part où on l'a éteinte. (Le calcul complet par dérivation est dans le corrigé de l'exercice 2.)</p>
+<p><b>Question 2.</b> La Proposition 8 demande deux choses.</p>
+<ul>
+<li><b>$E$ fini</b> : $E=\{0,1\}$, deux états. ✔</li>
+<li><b>Irréductible</b> : depuis 0 on va en 1 avec probabilité $p>0$, et depuis 1 on va en 0 avec probabilité $q>0$. Les deux états communiquent. ✔</li>
+</ul>
+<p>Donc la chaîne est récurrente positive, de loi invariante unique $\pi=\big(\frac{q}{p+q},\frac{p}{p+q}\big)$, avec $\pi(0)>0$ et $\pi(1)>0$. <b>Oui, les hypothèses sont vérifiées</b> : $(\hat p,\hat q)$ est fortement consistant et asymptotiquement gaussien. C'est l'hypothèse $0<p,q<1$ qui sert : si $p=0$, on ne quitterait jamais 0 et la chaîne ne serait plus irréductible.</p>
+<p><b>Question 3.</b> Proposition 8 : variance $\frac{P(x,y)(1-P(x,y))}{\pi(x)}$ pour chaque case, et indépendance entre lignes différentes.</p>
+<ul><li>$\hat p$ (ligne 0) : $\frac{p(1-p)}{\pi(0)}=\frac{p(1-p)(p+q)}{q}$.</li><li>$\hat q$ (ligne 1) : $\frac{q(1-q)}{\pi(1)}=\frac{q(1-q)(p+q)}{p}$.</li></ul>
+<div class="eq">$$\sqrt n\begin{pmatrix}\hat p-p\\ \hat q-q\end{pmatrix}\xrightarrow{\mathcal L}\mathcal N\left(0,\ \begin{pmatrix}\frac{p(1-p)(p+q)}{q}&0\\0&\frac{q(1-q)(p+q)}{p}\end{pmatrix}\right).$$</div>
+<p><b>Question 4, étape 1 : simplifier sous $p=q$.</b> Avec $q=p$ : $\frac{p+q}{q}=\frac{2p}{p}=2$. Les deux variances deviennent $2p(1-p)$. (Logique : avec $p=q$, la lampe passe autant de temps éteinte qu'allumée, $\pi=(1/2,1/2)$.)</p>
+<p><b>Étape 2 : écrire la différence.</b> Comme $p=q$, on peut écrire $\sqrt n(\hat p-\hat q)=\sqrt n(\hat p-p)-\sqrt n(\hat q-q)$.</p>
+<p><b>Étape 3 : la loi.</b> Une différence de deux gaussiennes indépendantes est gaussienne, et <b>les variances s'additionnent</b> (même pour une différence) :</p>
+<div class="eq">$$\sqrt n(\hat p-\hat q)\xrightarrow[H_0]{\mathcal L}\mathcal N\big(0,\ 2p(1-p)+2p(1-p)\big)=\mathcal N\big(0,\ 4p(1-p)\big).$$</div>
+<p><b>Question 5, étape 1 : remplacer l'inconnue.</b> La variance contient $p$, inconnu. Sous $H_0$, $p$ et $q$ sont la même chose, donc on peut utiliser <i>tous</i> les départs pour l'estimer :</p>
+<div class="eq">$$\bar p=\frac{N_n(0,1)+N_n(1,0)}{N_n(0+)+N_n(1+)}=\frac{\text{nombre de changements d'état}}{n-1}.$$</div>
+<p>Sous $H_0$, $\bar p\to p$, donc Slutsky donne :</p>
+<div class="eq">$$Z_n=\frac{\sqrt n(\hat p-\hat q)}{\sqrt{4\bar p(1-\bar p)}}\xrightarrow[H_0]{\mathcal L}\mathcal N(0,1).$$</div>
+<p><b>Étape 2 : la règle.</b> On rejette $H_0$ au niveau 5 % si $|Z_n|>1{,}96$. Sous $H_1$, $\hat p-\hat q\to p-q\ne0$, donc $|Z_n|\to\infty$ : le test est convergent.</p>
+<p class="note">Autre choix accepté : estimer la variance sans supposer $H_0$, par $\hat\sigma^2=\frac{\hat p(1-\hat p)}{\hat\pi(0)}+\frac{\hat q(1-\hat q)}{\hat\pi(1)}$ avec $\hat\pi(x)=N_n(x+)/n$. Les deux versions ont la même loi limite sous $H_0$.</p>
+<p><b>Question 6, pas à pas.</b></p>
+<ol>
+<li>$\hat p=30/100=0{,}3$ et $\hat q=50/100=0{,}5$.</li>
+<li>$\bar p=(30+50)/(100+100)=80/200=0{,}4$.</li>
+<li>$4\bar p(1-\bar p)=4\times0{,}4\times0{,}6=0{,}96$, et $\sqrt{0{,}96}\approx0{,}980$.</li>
+<li>$\sqrt{201}\approx14{,}18$ et $\sqrt n(\hat p-\hat q)=14{,}18\times(-0{,}2)\approx-2{,}835$.</li>
+<li>$Z_n=-2{,}835/0{,}980\approx-2{,}89$.</li>
+</ol>
+<p><b>Conclusion :</b> $|Z_n|=2{,}89>1{,}96$, on rejette $H_0$ : on allume la lampe moins souvent qu'on ne l'éteint. (Avec l'autre estimateur de variance, $Z_n\approx-2{,}95$ : même conclusion.)</p></details><div class="check"><label for="c20">$|Z_n|$ (2 décimales) :</label><input id="c20" class="num" type="text" inputmode="decimal"><button class="ghost" type="button" data-check="c20" data-ans="2.89" data-tol="0.02">Vérifier</button><span class="fb" id="c20-fb" aria-live="polite"></span></div><button class="ghost done" type="button" data-ex="ex20">Marquer comme compris</button>
+</article>
+<article class="exercise" id="ex21">
+<h3>21. Examen 2022, exercice 2 : naissance et mort, simulation en R et absorption</h3>
+<p class="meta">Niveau : examen · Source : Examen terminal du 15/12/2022, exercice 2 (énoncé complet). Les questions 1 et 2 sont aussi celles de l'examen 2024 (exercice 10).</p>
+<p>Soit $(X_t)_{t\ge0}$ un processus de Markov de sauts sur $E=\{0,1,\dots,N\}$ de générateur $A(0,1)=p$, $A(n,n+1)=p$ et $A(n,n-1)=q$ pour $1\le n\le N-1$, $A(N,N-1)=q$, et $A(n,m)=0$ si $|n-m|\ge2$, avec $p,q>0$.</p>
+<ol class="tasks">
+<li>Compléter le générateur en déterminant $A(n,n)$ pour $0\le n\le N$.<details class="cours"><summary>Rappel du cours : Théorème 7, p. 65</summary><p><b>Énoncé.</b> Il existe une matrice $A$ avec $A(x,y)\ge0$ pour $x\ne y$ et $A(x,x)=-\sum_{z\ne x}A(x,z)$ (générateur markovien), telle que $P_h(x,y)=hA(x,y)+o(h)$ et $P_h(x,x)=1+A(x,x)h+o(h)$. Les lignes de $A$ somment donc à zéro.</p></details></li>
+<li>Soit $(Z_j)_{j\ge0}$ la suite des états du processus, qui est une chaîne de Markov. Donner sa matrice de transition.<details class="cours"><summary>Rappel du cours : Proposition 22, p. 67 (chaîne immergée)</summary><p><b>Énoncé.</b> Si $a(x)>0$, conditionnellement à $X_0=x$, le premier temps de saut $T_1$ et l'état d'arrivée $Z_1$ sont indépendants ; $T_1$ suit une loi exponentielle de paramètre $a(x)=-A(x,x)$ et $\mathbb P_x(Z_1=y)=A(x,y)/a(x)$ pour $y\ne x$.</p><p>La transition de la chaîne immergée est donc $Q(x,y)=A(x,y)/a(x)$ hors diagonale, et $Q(x,x)=0$.</p></details></li>
+<li>Quelles sont les propriétés du processus (irréductibilité, récurrence, existence d'une probabilité invariante) ?<details class="cours"><summary>Rappel du cours : Théorème 8 et Proposition 28, p. 73</summary><p><b>Théorème 8.</b> Pour un processus irréductible : transient, il n'a pas de probabilité invariante ; récurrent nul non plus ; récurrent positif, il a une unique probabilité invariante, $\pi(x)=\dfrac{1}{a(x)\,\mathbb E_x(R_x)}$, qui charge tous les points.</p><p><b>Proposition 28.</b> $\pi$ est invariante si et seulement si $\pi A = 0$. Le polycopié imprime « $\pi A=\pi$ », une coquille : on obtient $\pi A=0$ en dérivant $\pi P_t=\pi$ en $t=0$.</p></details></li>
+<li>On suppose $X_0=0$. Donner un code R (même approximatif) qui simule une trajectoire avec une réalisation de $Z_1,\dots,Z_n$ et des $n$ premiers délais entre les sauts.<details class="cours"><summary>Rappel du cours : Proposition 22, p. 67</summary><p><b>Énoncé.</b> Depuis $x$ (avec $a(x)>0$), on attend un temps $\mathcal E(a(x))$, puis on saute vers $y$ avec probabilité $A(x,y)/a(x)$, indépendamment du temps d'attente. En répétant cette règle à chaque saut, on obtient l'algorithme de simulation.</p></details></li>
+<li>On modifie le générateur : $B(0,1)=B(0,0)=0$ et $B(n,m)=A(n,m)$ sinon. Que dire des trajectoires d'un processus $(Y_t)$ de générateur $B$ ? (Ce processus a été étudié en cours et en TP.)<details class="cours"><summary>Rappel du cours : Section 4.6.3, p. 76 (« un cas de maladie curable ») et TP 2, exercice 3</summary><p><b>Énoncé.</b> Générateur $A(n,n-1)=\beta_n>0$ pour $1\le n\le m$, $A(n,n+1)=\alpha_n>0$ pour $1\le n\le m-1$ et $A(0,1)=0$ : « il s'agit d'un processus de naissance et de mort avec un nombre fini d'états, et 0 est un point absorbant. La chaîne immergée est absorbante […] donc le temps d'atteinte $\tau$ de 0 est fini p.s. », et de plus $\mathbb E_{i_0}(\tau)<+\infty$.</p>
+  <p><b>TP 2, exercice 3.</b> Les temps moyens avant extinction $\big(\mathbb E_1(\tau),\dots,\mathbb E_m(\tau)\big)$ sont solutions de $[A(i,j)]_{1\le i,j\le m}\,u=-\mathbf 1$.</p></details></li>
+</ol>
+<details><summary>Indice</summary><p>Question 5 : regardez la ligne 0 de $B$. Que se passe-t-il quand le processus arrive en 0 ?</p></details>
+<details><summary>Corrigé détaillé</summary>
+<p class="reading">Image : un ascenseur dans un immeuble de $N$ étages. Il monte d'un étage au taux $p$ et descend d'un étage au taux $q$.</p>
+<p><b>Question 1.</b> Chaque ligne d'un générateur a une somme nulle (Théorème 7), donc la diagonale vaut moins le reste de la ligne : $A(0,0)=-p$ (on ne peut que monter), $A(n,n)=-(p+q)$ pour $1\le n\le N-1$, $A(N,N)=-q$ (on ne peut que descendre).</p>
+<p><b>Question 2.</b> $Q(x,y)=A(x,y)/a(x)$ pour $y\ne x$, et $Q(x,x)=0$ (Proposition 22) :</p>
+<ul><li>$Q(0,1)=1$ et $Q(N,N-1)=1$ : aux deux bouts, on n'a pas le choix ;</li><li>pour $1\le n\le N-1$ : $Q(n,n+1)=\frac{p}{p+q}$ et $Q(n,n-1)=\frac{q}{p+q}$.</li></ul>
+<p><b>Question 3, irréductible :</b> de $n$ on atteint $n+1$ et $n-1$. En enchaînant, tout étage atteint tout autre étage. ✔</p>
+<p><b>Récurrent :</b> l'espace $E$ est fini et le processus est irréductible. Il revient donc toujours à chaque état, et le temps moyen de retour est fini : <b>récurrent positif</b>.</p>
+<p><b>Probabilité invariante :</b> le Théorème 8 en donne une, et une seule. On la calcule en équilibrant chaque marche d'escalier : $\pi(n)p=\pi(n+1)q$, d'où</p>
+<div class="eq">$$\pi(n)=\frac{r^n}{\sum_{k=0}^Nr^k},\qquad r=\frac pq.$$</div>
+<p>Si $p>q$, l'ascenseur passe plus de temps en haut ; si $p\lt q$, plus de temps en bas ; si $p=q$, autant à chaque étage ($\pi(n)=\frac{1}{N+1}$).</p>
+<p><b>Question 4.</b> On suit la Proposition 22 : à chaque étape, (a) on tire le temps passé dans l'état actuel, une exponentielle de paramètre $a(x)$ ; (b) on tire le nouvel état avec $Q(x,\cdot)$. En R :</p>
+<pre><code>simule_trajectoire &lt;- function(n, p, q, N) {
+  Z &lt;- numeric(n + 1)   # états Z_0, ..., Z_n
+  S &lt;- numeric(n)       # délais S_1, ..., S_n
+  Z[1] &lt;- 0             # X_0 = 0
+  for (j in 1:n) {
+    x &lt;- Z[j]
+    # taux de sortie a(x) = -A(x, x)
+    a &lt;- if (x == 0) p else if (x == N) q else p + q
+    S[j] &lt;- rexp(1, rate = a)          # temps passé en x
+    # nouvel état selon la chaîne immergée Q(x, .)
+    if (x == 0) {
+      y &lt;- 1
+    } else if (x == N) {
+      y &lt;- N - 1
+    } else {
+      y &lt;- if (runif(1) &lt; p / (p + q)) x + 1 else x - 1
+    }
+    Z[j + 1] &lt;- y
+  }
+  T &lt;- cumsum(S)                        # instants des sauts T_1, ..., T_n
+  list(etats = Z, delais = S, sauts = T)
+}
+
+traj &lt;- simule_trajectoire(n = 50, p = 1, q = 2, N = 10)
+plot(stepfun(traj$sauts, traj$etats), do.points = FALSE,
+     xlab = "temps", ylab = "état", main = "Trajectoire simulée")</code></pre>
+<p>Lecture ligne à ligne : <code>rexp(1, rate = a)</code> tire un temps d'attente de moyenne $1/a$ ; <code>runif(1) &lt; p/(p+q)</code> est une pièce truquée qui dit « monter » avec probabilité $\frac{p}{p+q}$ ; <code>cumsum(S)</code> transforme les délais en dates de saut ; <code>stepfun</code> trace la trajectoire en escalier.</p>
+<p><b>Question 5, étape 1 : lire la ligne 0 de $B$.</b> $B(0,1)=0$ et $B(0,0)=0$ : depuis 0, le taux de sortie est $b(0)=0$. Le processus ne quitte <b>jamais</b> 0 : c'est un <b>état absorbant</b>.</p>
+<p><b>Étape 2 : peut-on atteindre 0 ?</b> Oui, depuis n'importe quel étage : il suffit de descendre étage par étage, ce qui a une probabilité positive.</p>
+<p><b>Étape 3 : conclusion.</b> C'est le modèle « maladie curable » du cours (p. 76) et de l'exercice 3 du TP 2, avec $\alpha_n=p$ et $\beta_n=q$. Le polycopié montre que :</p>
+<ul><li>le temps d'atteinte $\tau$ de 0 est fini presque sûrement : <b>toute trajectoire finit par arriver en 0 et y reste pour toujours</b> (l'épidémie s'éteint) ;</li><li>le temps moyen d'extinction $\mathbb E_i(\tau)$ est fini. On le calcule en résolvant $[B(i,j)]_{1\le i,j\le N}\,u=-\mathbf 1$ (TP 2).</li></ul>
+<p>Conséquences : le processus n'est plus irréductible (on ne sort pas de 0), les états $1,\dots,N$ sont transients, et la seule probabilité invariante est la masse en 0, $\pi=(1,0,\dots,0)$. Les trajectoires bougent un moment entre $1$ et $N$, puis restent bloquées à 0.</p></details><button class="ghost done" type="button" data-ex="ex21">Marquer comme compris</button>
+</article>
+<article class="exercise" id="ex22">
+<h3>22. Examen 2022, exercice 3 : covariance d'un processus de Poisson</h3>
+<p class="meta">Niveau : examen · Source : Examen terminal du 15/12/2022, exercice 3 (énoncé complet)</p>
+<p>Soit $(N_t)_{t\ge0}$ un processus de Poisson simple de paramètre $\lambda>0$. On rappelle que $\operatorname{Cov}(U,V)=\mathbb E\big[(U-\mathbb E U)(V-\mathbb E V)\big]$.</p>
+<ol class="tasks">
+<li>Soit $0\lt s\lt t$. Que peut-on dire des variables $N_t-N_s$ et $N_s$ ?<details class="cours"><summary>Rappel du cours : Définition 8, p. 47 et remarque qui suit</summary><p><b>Définition 8.</b> (1) $N_0=0$ ; (2) accroissements indépendants : $N_{t+s}-N_s$ est indépendant de $\sigma(N_u : u\le s)$ ; (3) $N_{t+s}-N_s$ suit une loi de Poisson de paramètre $\lambda t$.</p>
+  <p><b>Remarque du polycopié :</b> les accroissements sont aussi stationnaires, la loi de $N_{t+s}-N_s$ ne dépend que de la longueur $t$.</p></details></li>
+<li>En déduire que la covariance entre $N_t-N_s$ et $N_s$ est nulle.<details class="cours"><summary>Rappel du cours : Définition 8, p. 47 et remarque qui suit</summary><p><b>Définition 8.</b> (1) $N_0=0$ ; (2) accroissements indépendants : $N_{t+s}-N_s$ est indépendant de $\sigma(N_u : u\le s)$ ; (3) $N_{t+s}-N_s$ suit une loi de Poisson de paramètre $\lambda t$.</p>
+  <p><b>Remarque du polycopié :</b> les accroissements sont aussi stationnaires, la loi de $N_{t+s}-N_s$ ne dépend que de la longueur $t$.</p></details></li>
+<li>Montrer que la variance de $N_s$ est égale à $\lambda s$.<details class="cours"><summary>Rappel du cours : Définition 8, p. 47 et remarque qui suit</summary><p><b>Définition 8.</b> (1) $N_0=0$ ; (2) accroissements indépendants : $N_{t+s}-N_s$ est indépendant de $\sigma(N_u : u\le s)$ ; (3) $N_{t+s}-N_s$ suit une loi de Poisson de paramètre $\lambda t$.</p>
+  <p><b>Remarque du polycopié :</b> les accroissements sont aussi stationnaires, la loi de $N_{t+s}-N_s$ ne dépend que de la longueur $t$.</p></details></li>
+<li>En déduire $\operatorname{Cov}(N_s,N_t)$.<details class="cours"><summary>Rappel du cours : Définition 8, p. 47 et remarque qui suit</summary><p><b>Définition 8.</b> (1) $N_0=0$ ; (2) accroissements indépendants : $N_{t+s}-N_s$ est indépendant de $\sigma(N_u : u\le s)$ ; (3) $N_{t+s}-N_s$ suit une loi de Poisson de paramètre $\lambda t$.</p>
+  <p><b>Remarque du polycopié :</b> les accroissements sont aussi stationnaires, la loi de $N_{t+s}-N_s$ ne dépend que de la longueur $t$.</p></details></li>
+<li>On observe le $n$-ième temps de saut $T_n$. Quel estimateur consistant de $\lambda$ peut-on construire uniquement à partir de $T_n$ ?<details class="cours"><summary>Rappel du cours : Proposition 14, p. 49, schéma 2 (p. 52) et Théorème 5</summary><p><b>Proposition 14.</b> Les délais $T_n-T_{n-1}$ sont i.i.d. de loi $\mathcal E(\lambda)$.</p>
+  <p><b>Schéma 2 (p. 52).</b> Si l'on observe $T_1,\dots,T_n$, l'EMV est $\hat\lambda=n/T_n$ ; il « converge p.s. vers $\lambda$ (voir la preuve du Théorème 5) », et $\sqrt n(\lambda T_n/n-1)\to\mathcal N(0,1)$.</p></details></li>
+<li>Soit $(X_t)$ un processus de Markov de sauts sur $\mathbb N$ de générateur $A(n,n+1)=\lambda$, $A(n,n)=-\lambda$, $A(n,m)=0$ si $m\notin\{n,n+1\}$. Si $X_0=0$, expliquer pourquoi $(X_t)$ a la même loi que $(N_t)$.<details class="cours"><summary>Rappel du cours : Propositions 13 et 22 (p. 48 et 67), Proposition 14</summary><p><b>Proposition 13.</b> $\mathbb P(N_{t+h}-N_t=1)=\lambda h+o(h)$ et $\mathbb P(N_{t+h}-N_t>1)=o(h)$.</p>
+  <p><b>Proposition 22.</b> Depuis $x$, on attend un temps $\mathcal E(a(x))$ puis on saute vers $y$ avec probabilité $A(x,y)/a(x)$.</p>
+  <p><b>Proposition 14.</b> Un processus de Poisson s'écrit $N_t=\sum_{n\ge1}\mathbf 1\{T_n\le t\}$ avec des délais $T_n-T_{n-1}$ i.i.d. $\mathcal E(\lambda)$.</p></details></li>
+</ol>
+<details><summary>Indice</summary><p>Question 4 : écrire $N_t=N_s+(N_t-N_s)$ et utiliser que la covariance se « distribue » sur une somme.</p></details>
+<details><summary>Corrigé détaillé</summary>
+<p class="reading">Image : un compteur de voitures au bord d'une route. $N_s$ = voitures passées avant l'heure $s$, $N_t-N_s$ = voitures passées entre $s$ et $t$.</p>
+<p><b>Question 1.</b> Deux choses.</p>
+<ul><li><b>Elles sont indépendantes.</b> $N_s=N_s-N_0$ ne dépend que de ce qui se passe sur $[0,s]$, et $N_t-N_s$ de ce qui se passe sur $]s,t]$. Le point 2 de la Définition 8 dit exactement que $N_t-N_s$ est indépendant de tout le passé avant $s$, donc de $N_s$.</li>
+<li><b>On connaît leurs lois.</b> $N_s\sim\mathcal P(\lambda s)$ et $N_t-N_s\sim\mathcal P\big(\lambda(t-s)\big)$, la loi de $N_{t-s}$.</li></ul>
+<p>En mots : les voitures de la matinée ne disent rien sur celles de l'après-midi.</p>
+<p><b>Question 2.</b> Pour deux variables indépendantes, l'espérance d'un produit est le produit des espérances. On pose $U=N_t-N_s$ et $V=N_s$ :</p>
+<div class="eq">$$\operatorname{Cov}(U,V)=\mathbb E\big[(U-\mathbb EU)(V-\mathbb EV)\big]=\mathbb E[U-\mathbb EU]\times\mathbb E[V-\mathbb EV]=0\times0=0.$$</div>
+<p>(Chaque facteur est centré, donc d'espérance nulle.)</p>
+<p><b>Question 3, étape 1 : la loi.</b> $N_s\sim\mathcal P(\mu)$ avec $\mu=\lambda s$, c'est-à-dire $\mathbb P(N_s=k)=e^{-\mu}\frac{\mu^k}{k!}$.</p>
+<p><b>Étape 2 : l'espérance.</b> $\mathbb E N_s=\sum_{k\ge1}k\,e^{-\mu}\frac{\mu^k}{k!}=\mu\sum_{k\ge1}e^{-\mu}\frac{\mu^{k-1}}{(k-1)!}=\mu\times1=\mu$ (la dernière somme est la somme d'une loi de Poisson, qui vaut 1).</p>
+<p><b>Étape 3 : l'astuce $k(k-1)$.</b> $\mathbb E[N_s(N_s-1)]=\sum_{k\ge2}k(k-1)e^{-\mu}\frac{\mu^k}{k!}=\mu^2\sum_{k\ge2}e^{-\mu}\frac{\mu^{k-2}}{(k-2)!}=\mu^2$.</p>
+<p><b>Étape 4 : la variance.</b> $\mathbb E[N_s^2]=\mathbb E[N_s(N_s-1)]+\mathbb E[N_s]=\mu^2+\mu$, donc</p>
+<div class="eq">$$\operatorname{Var}(N_s)=\mathbb E[N_s^2]-(\mathbb EN_s)^2=\mu^2+\mu-\mu^2=\mu=\lambda s.$$</div>
+<p><b>Question 4.</b> On coupe $N_t$ en deux morceaux : $N_t=N_s+(N_t-N_s)$. La covariance est linéaire :</p>
+<div class="eq">$$\operatorname{Cov}(N_s,N_t)=\operatorname{Cov}(N_s,N_s)+\operatorname{Cov}(N_s,N_t-N_s)=\operatorname{Var}(N_s)+0=\lambda s.$$</div>
+<p>Pour $s$ et $t$ quelconques : $\operatorname{Cov}(N_s,N_t)=\lambda\min(s,t)$. En mots : $N_s$ et $N_t$ ne partagent que les voitures passées avant le plus petit des deux instants.</p>
+<p><b>Question 5, étape 1 : ce qu'est $T_n$.</b> Proposition 14 : $T_n=\sum_{i=1}^n(T_i-T_{i-1})$, une somme de $n$ attentes i.i.d. $\mathcal E(\lambda)$, chacune de moyenne $1/\lambda$.</p>
+<p><b>Étape 2 : la loi des grands nombres.</b> $\frac{T_n}{n}\to\frac1\lambda$ p.s. quand $n\to\infty$ (la moyenne des attentes tend vers l'attente moyenne).</p>
+<p><b>Étape 3 : retourner la fraction.</b> La fonction $x\mapsto1/x$ est continue en $1/\lambda>0$, donc</p>
+<div class="eq">$$\hat\lambda=\frac{n}{T_n}\xrightarrow{\text{p.s.}}\lambda.$$</div>
+<p>C'est l'EMV du schéma 2 (p. 52) : « $n$ voitures en $T_n$ heures, donc $n/T_n$ voitures par heure ». (Bonus : $\frac{n-1}{T_n}$ est aussi consistant, et en plus sans biais.)</p>
+<p><b>Question 6, étape 1 : ce que dit le générateur.</b> Depuis $n$, le taux de sortie est $a(n)=\lambda$ et le seul saut possible est vers $n+1$. Proposition 22 : on attend un temps $\mathcal E(\lambda)$, puis on monte de 1, et cela à chaque fois, indépendamment.</p>
+<p><b>Étape 2 : comparer avec Poisson.</b> Partant de 0, $X_t$ est donc le nombre de sauts avant $t$, avec des délais i.i.d. $\mathcal E(\lambda)$ : $X_t=\sum_{n\ge1}\mathbf 1\{T_n\le t\}$. C'est exactement la description d'un processus de Poisson de la Proposition 14.</p>
+<p><b>Étape 3 : conclure.</b> La loi d'un processus de Markov de sauts est entièrement fixée par sa loi initiale et son générateur. Le processus de Poisson a ce même générateur : Proposition 13, $\mathbb P(N_{t+h}-N_t=1)=\lambda h+o(h)$ et $\mathbb P(N_{t+h}-N_t>1)=o(h)$, donc $A(n,n+1)=\lambda$ et $A(n,n)=-\lambda$. Il part aussi de 0. Mêmes ingrédients, donc <b>même loi</b>.</p></details><div class="check"><label for="c22">$\operatorname{Cov}(N_2,N_5)$ pour $\lambda=3$ :</label><input id="c22" class="num" type="text" inputmode="decimal"><button class="ghost" type="button" data-check="c22" data-ans="6" data-tol="0">Vérifier</button><span class="fb" id="c22-fb" aria-live="polite"></span></div><button class="ghost done" type="button" data-ex="ex22">Marquer comme compris</button>
+</article>
 </section>
 
 <section id="fiche">
@@ -1258,7 +1410,7 @@ $\mu=(0{,}6;\ 0{,}4)$, $\ P=\begin{pmatrix}0{,}9&0{,}1\\0{,}1&0{,}9\end{pmatrix}
 <h2>Sources</h2>
 <ul>
   <li>L. Truquet, <i>Statistiques des processus 3A</i>, polycopié ENSAI, 5 janvier 2024 : sections 2.2 à 2.8 (p. 15 à 44), 3.1 à 3.2 (p. 47 à 57), 4.1 à 4.7 (p. 61 à 80). Numéros de proposition et de page repris tels quels.</li>
-  <li>Examen terminal du 17/01/2024 (exercices 1, 2 et 3) ; TP 1 (chaînes de Markov) et TP 2 (HMM et processus de sauts) ; diaporama « Processus de Poisson homogène et non homogène ».</li>
+  <li>Examen terminal du 17/01/2024 (exercices 1, 2 et 3) ; examen terminal du 15/12/2022 (exercices 1, 2 et 3) ; TP 1 (chaînes de Markov) et TP 2 (HMM et processus de sauts) ; diaporama « Processus de Poisson homogène et non homogène ».</li>
   <li>Les exemples marqués « données d'enseignement » sont inventés pour illustrer les calculs ; leurs résultats ont été vérifiés par un calcul indépendant en Python et recalculés en direct dans la page.</li>
   <li>Ajouts hors cours, signalés dans le texte : normalisation numérique des récurrences, approximation de Wilson-Hilferty pour les quantiles du $\chi^2$ du calculateur.</li>
   <li>Aucune image externe : tous les schémas sont dessinés pour cette page.</li>
